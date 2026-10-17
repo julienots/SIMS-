@@ -347,6 +347,8 @@ export class SimView {
       if (b.head) b.head.scale.setScalar(this.headScale || 1);
       const w = Math.sqrt((ap.shoulders || 1) * (ap.build || 1));
       if (b.spine) b.spine.scale.set(1, w, w);
+      // Squelette Biped : l'axe X local suit la longueur de l'os.
+      for (const [n, k] of [['Bip01_L_Thigh', 'legs'], ['Bip01_R_Thigh', 'legs'], ['Bip01_L_UpperArm', 'arms'], ['Bip01_R_UpperArm', 'arms']]) if (b[n]) b[n].scale.x = ap[k] || 1;
     } else if (b.head) b.head.scale.setScalar(this.headScale || 1);
     if (!this.real) {
     if (b.chest) b.chest.scale.set((ap.shoulders || 1) * (ap.build || 1), 1, ap.build || 1);

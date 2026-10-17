@@ -4,6 +4,7 @@ import { registry } from '../mods/registry.js';
 import { World } from './world.js';
 import { createSim } from './factory.js';
 import { Navigator } from './nav.js';
+import { FAUNA } from './data/animals.js';
 
 export const ENVIRONMENTS = [
   { id: 'modern', name: 'Ville moderne', icon: '🏙️', desc: 'Immeubles, commerces et quartiers animés.', ground: '#6aa84f', venues: ['park', 'restaurant', 'gym', 'library', 'cinema', 'office', 'shop', 'school'] },
@@ -487,11 +488,17 @@ class Generator {
     // Créatures et animaux.
     w.d.critters = [];
     if (w.settings.creatures) {
-      const n = Math.max(2, Math.floor(w.w / 24));
+      const fauna = FAUNA[this.env.id] || FAUNA.default;
+      const n = Math.max(fauna.length, Math.floor(w.w / 10));
       for (let i = 0; i < n; i++) {
-        const x = rng.int(4, w.w - 5), y = rng.int(4, w.h - 5);
+        // De préférence hors des parcelles habitées (prés, bois) ; sinon n'importe où hors de l'eau.
+        let x = 0, y = 0;
+        for (let k = 0; k < 30; k++) {
+          x = rng.int(4, w.w - 5); y = rng.int(4, w.h - 5);
+          if (w.terrainAt(x, y) !== T.WATER && (k > 20 || !w.lotAt(x, y))) break;
+        }
         if (w.terrainAt(x, y) === T.WATER) continue;
-        w.d.critters.push({ id: uid('cr'), kind: this.env.id === 'fantasy' && i % 2 ? 'skeleton' : 'fox', x: x + 0.5, y: y + 0.5, tx: x, ty: y, rot: 0, state: 'idle', t: 0 });
+        w.d.critters.push({ id: uid('cr'), kind: fauna[i % fauna.length], x: x + 0.5, y: y + 0.5, tx: x, ty: y, rot: rng.range(0, 6.28), state: 'idle', t: 0 });
       }
     }
   }

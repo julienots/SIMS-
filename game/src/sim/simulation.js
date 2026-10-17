@@ -9,6 +9,7 @@ import { SocialSystem } from './social.js';
 import { LifeSystem } from './lifecycle.js';
 import { EventSystem } from './events.js';
 import { PowerSystem } from './powers.js';
+import { ANIMALS } from './data/animals.js';
 
 export const SPEEDS = [0, 1, 3, 8];
 const WALK = 1.7, RUN = 3.6;      // cases / seconde de simulation
@@ -121,7 +122,7 @@ export class Simulation extends Emitter {
       const d = Math.hypot(tx - c.x, ty - c.y);
       let near = null;
       for (const s of w.sims) if (!s._rt.hidden && Math.abs(s.pos.x - c.x) < 2.2 && Math.abs(s.pos.y - c.y) < 2.2) { near = s; break; }
-      if (near && c.kind === 'fox' && c.state !== 'flee') {
+      if (near && ANIMALS[c.kind]?.wild && c.state !== 'flee') {
         const ax = c.x - near.pos.x, ay = c.y - near.pos.y, n = Math.hypot(ax, ay) || 1;
         const fx = Math.floor(c.x + ax / n * 6), fy = Math.floor(c.y + ay / n * 6);
         if (this.nav.passable(0, fx, fy, 'walk')) { c.tx = fx; c.ty = fy; c.state = 'flee'; }
@@ -132,13 +133,13 @@ export class Simulation extends Emitter {
         if (c.t <= 0) {
           for (let k = 0; k < 6; k++) {
             const nx = Math.floor(c.x + (Math.random() - 0.5) * 16), ny = Math.floor(c.y + (Math.random() - 0.5) * 16);
-            if (this.nav.passable(0, nx, ny, 'walk') && !w.isRoad(nx, ny)) { c.tx = nx; c.ty = ny; c.state = 'walk'; break; }
+            if (this.nav.passable(0, nx, ny, 'walk') && !w.isRoad(nx, ny) && (k > 3 || !ANIMALS[c.kind]?.outdoor || !w.lotAt(nx, ny))) { c.tx = nx; c.ty = ny; c.state = 'walk'; break; }
           }
           c.t = 1;
         }
       } else {
         if (c.state === 'idle') c.state = 'walk';
-        const sp = (c.state === 'flee' ? 3.2 : 1.1) * dt;
+        const sp = (c.state === 'flee' ? 3.2 : ANIMALS[c.kind]?.speed || 1.1) * dt;
         const st = Math.min(d, sp);
         const nx = c.x + (tx - c.x) / d * st, ny = c.y + (ty - c.y) / d * st;
         if (this.nav.passable(0, Math.floor(nx), Math.floor(ny), 'walk') || Math.floor(nx) === Math.floor(c.x) && Math.floor(ny) === Math.floor(c.y)) { c.x = nx; c.y = ny; }
@@ -541,7 +542,7 @@ export class Simulation extends Emitter {
       if (Array.isArray(st)) mk(st[0], st[1], 'sit', def.seatInFront ? st[1] + 0.8 : halfD + 0.5);
       else mk(st.x, st.z, 'sit', st.az ?? st.z, st.r || 0, st.ax ?? st.x);
     });
-    else if (aff.pose === 'lie' && def.beds) def.beds.forEach(([lx, lz]) => mk(lx, lz, 'lie', halfD + 0.5));
+    else if (aff.pose === 'lie' && def.beds) def.beds.forEach(([lx, lz]) => mk(lx, lz, 'lie', halfD + 0.5, def.size[0] > def.size[1] ? Math.PI / 2 : 0));
     else if (aff.pose === 'hidden' || def.building) {
       mk(0, halfD + 0.5, 'hidden', halfD + 0.5);
     } else if (def.stand) mk(def.stand[0], def.stand[1], 'stand', def.inside ? halfD + 0.5 : def.stand[1]);

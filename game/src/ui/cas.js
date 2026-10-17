@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { h, btn, toast, openModal, focusFirst, usingPadRef } from './dom.js';
 import { registry } from '../mods/registry.js';
 import { SimView } from '../render/simview.js';
-import { createSim, BODIES, SKIN_TONES, HAIR_COLORS, OUTFIT_COLORS, EXTRAS, EYE_COLORS, simToTemplate, simFromTemplate, pickTraits, defaultAppearance, SECRETS } from '../sim/factory.js';
+import { createSim, BODIES, REAL_BODIES, isRealBody, SKIN_TONES, HAIR_COLORS, OUTFIT_COLORS, EXTRAS, EYE_COLORS, simToTemplate, simFromTemplate, pickTraits, defaultAppearance, SECRETS } from '../sim/factory.js';
 import { LIKES, FEARS, LIFE_STAGES } from '../sim/data/core-data.js';
 import { RNG, uid } from '../core/util.js';
 import { getGallery, setGallery } from '../save/storage.js';
@@ -175,20 +175,24 @@ export class CAS {
         ['young', 'adult', 'elder', 'teen'].includes(s.stage) ? [h('h3', {}, 'Métier'), h('select', { onchange: e => { s.career = { id: e.target.value, level: 0, perf: 0, days: 0 }; } }, ...[...registry.careers.values()].map(c => h('option', { value: c.id, selected: s.career.id === c.id }, `${c.icon} ${c.name}`)))] : null,
       ];
       case 'body': return [
-        h('h3', {}, 'Morphologie de base'), h('div', { class: 'grid small' }, ...BODIES.map(b => h('button', { class: `card ${ap.body === b.id ? 'selected' : ''}`, onclick: () => this.set('appearance.body', b.id) }, h('div', { class: 'big' }, { Knight: '🧍', Barbarian: '🏋️', Mage: '🧙', Rogue: '🤸', Rogue_Hooded: '🥷' }[b.id]), h('div', { class: 'title' }, b.name)))),
-        h('h3', {}, 'Teint'), this.swatches('appearance.skin', SKIN_TONES),
+        h('p', { class: 'muted' }, 'Corps réalistes : modèles 3D Microsoft Rocketbox (licence MIT). Style cartoon : KayKit (CC0).'),
+        ...['Adultes', 'Métiers', 'Enfants'].flatMap(g => [h('h3', {}, `Réaliste — ${g}`), h('div', { class: 'grid bodies' }, ...REAL_BODIES.filter(b => b.group === g).map(b => h('button', { class: `card body-card ${ap.body === b.id ? 'selected' : ''}`, onclick: () => this.set('appearance.body', b.id) }, h('img', { src: `assets/models/real/thumbs/${b.id}.jpg`, alt: b.name, loading: 'lazy' }), h('div', { class: 'title' }, b.name))))]),
+        h('h3', {}, 'Style cartoon'), h('div', { class: 'grid small' }, ...BODIES.map(b => h('button', { class: `card ${ap.body === b.id ? 'selected' : ''}`, onclick: () => this.set('appearance.body', b.id) }, h('div', { class: 'big' }, { Knight: '🧍', Barbarian: '🏋️', Mage: '🧙', Rogue: '🤸', Rogue_Hooded: '🥷' }[b.id]), h('div', { class: 'title' }, b.name)))),
+        isRealBody(ap.body) ? h('p', { class: 'muted' }, 'Le teint et la tenue des corps réalistes viennent de leurs textures d’origine : choisissez un autre corps pour les changer.') : [h('h3', {}, 'Teint'), this.swatches('appearance.skin', SKIN_TONES)],
         h('h3', {}, 'Proportions'),
         this.slider('Taille', 'appearance.height', 0.82, 1.18), this.slider('Corpulence', 'appearance.build', 0.75, 1.35), this.slider('Carrure (épaules)', 'appearance.shoulders', 0.8, 1.25),
         this.slider('Taille de la tête', 'appearance.head', 0.85, 1.25), this.slider('Longueur des jambes', 'appearance.legs', 0.85, 1.15), this.slider('Longueur des bras', 'appearance.arms', 0.85, 1.15),
       ];
       case 'face': return [
         h('h3', {}, 'Couleur des cheveux et de la pilosité'), this.swatches('appearance.hair', HAIR_COLORS),
+        isRealBody(ap.body) ? h('div', { class: 'row' }, btn(`${ap.hairTint ? '✅' : '⬜'} Teindre les cheveux du corps réaliste`, () => this.set('appearance.hairTint', !ap.hairTint), 'small')) : null,
         h('h3', {}, 'Couleur des yeux'), this.swatches('appearance.eyes', EYE_COLORS),
         h('p', { class: 'muted' }, 'Les modèles libres utilisés ont des visages peints : la couleur des yeux est mémorisée pour l’héritage et l’affichage du portrait.'),
         h('h3', {}, 'Visage : traits distinctifs'),
         h('div', { class: 'row' }, ...EXTRAS.filter(e => ['glasses', 'sunglasses', 'mustache', 'beard', 'freckles', 'scar', 'makeup', 'earrings'].includes(e.id)).map(e => this.extraBtn(e))),
       ];
       case 'outfit': return [
+        isRealBody(ap.body) ? h('p', { class: 'muted' }, 'Corps réaliste : la tenue est celle du modèle d’origine (les couleurs ci-dessous s’appliquent au style cartoon). Les accessoires restent disponibles.') : null,
         h('h3', {}, 'Styles prêts à porter'), h('div', { class: 'row' }, ...OUTFIT_PRESETS.map(([n, p]) => btn(n, () => { Object.assign(ap, p); this.view.builtKey = null; this.render(); }, 'small'))),
         h('h3', {}, 'Couleur principale'), this.swatches('appearance.primary', OUTFIT_COLORS),
         h('h3', {}, 'Couleur secondaire'), this.swatches('appearance.secondary', OUTFIT_COLORS),

@@ -57,7 +57,11 @@ export function buildProcModel(kind, def, loadGLB) {
       add(cyl(0.02, 0.02, 0.4, '#bbb', 0, 1.8, -0.4, { metal: 0.8 }), cyl(0.12, 0.12, 0.03, '#ccc', 0, 2.0, -0.3, { metal: 0.8 }));
       break;
     case 'bathtub':
-      add(box(1.8, 0.55, 0.85, '#f7f7f7', 0, 0, 0, { rough: 0.15 }), box(1.6, 0.05, 0.65, '#8fd3f4', 0, 0.48, 0, { opacity: 0.8, rough: 0.05 }), cyl(0.03, 0.03, 0.3, '#bbb', -0.8, 0.5, 0, { metal: 0.8 }));
+      // Baignoire creuse : fond + 4 parois, pour qu'un Sim allongé soit visible dedans.
+      add(box(1.8, 0.1, 0.85, '#f7f7f7', 0, 0, 0, { rough: 0.15 }),
+        box(1.8, 0.55, 0.1, '#f7f7f7', 0, 0, -0.375, { rough: 0.15 }), box(1.8, 0.55, 0.1, '#f7f7f7', 0, 0, 0.375, { rough: 0.15 }),
+        box(0.1, 0.55, 0.85, '#f7f7f7', -0.85, 0, 0, { rough: 0.15 }), box(0.1, 0.55, 0.85, '#f7f7f7', 0.85, 0, 0, { rough: 0.15 }),
+        box(1.6, 0.02, 0.65, '#8fd3f4', 0, 0.4, 0, { opacity: 0.45, rough: 0.05 }), cyl(0.03, 0.03, 0.3, '#bbb', -0.8, 0.5, 0, { metal: 0.8 }));
       break;
     case 'sink':
       add(box(0.6, 0.8, 0.45, '#ffffff', 0, 0, -0.2, { rough: 0.2 }), box(0.5, 0.06, 0.35, '#cfd8dc', 0, 0.8, -0.2), box(0.5, 0.6, 0.04, '#bcd9e8', 0, 1.2, -0.42, { metal: 0.6, rough: 0.05 }));

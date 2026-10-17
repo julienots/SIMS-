@@ -10,6 +10,7 @@ import { World } from '../sim/world.js';
 import { simFromTemplate } from '../sim/factory.js';
 import { audioSettings, setMusicVolume } from '../engine/audio.js';
 import { ALIGNMENTS } from '../sim/powers.js';
+import { ANIMALS } from '../sim/data/animals.js';
 
 export class Panels {
   constructor(game, app) { this.game = game; this.app = app; }
@@ -298,7 +299,7 @@ export class Panels {
             h('h3', {}, 'Heure'), h('div', { class: 'row' }, ...[6, 9, 12, 15, 18, 21, 0].map(hr => btn(`${hr}h`, () => { g.snapshot('Changer l’heure'); const d = Math.floor(W.time / 1440); W.d.time = d * 1440 + hr * 60 + (hr === 0 ? 1440 : 0); toast(`Il est ${hr}h`, '🕒'); }, 'small'))),
             h('h3', {}, 'Météo'), h('div', { class: 'row' }, ...[['sun', '☀️ Soleil'], ['cloudy', '☁️ Nuageux'], ['rain', '🌧️ Pluie'], ['snow', '❄️ Neige']].map(([k, v]) => btn(v, () => { W.d.weather = { type: k, until: W.time + 600 }; }, 'small'))),
             h('h3', {}, 'Temps'), h('div', { class: 'row' }, ...SPEEDS.map((sp, i) => btn(i === 0 ? '⏸ Pause' : `×${sp}`, () => { S.setSpeed(i); g.ui.hud.refresh(); }, 'small')), btn('⏩ Avancer de 1 h', () => { for (let i = 0; i < 300; i++) S.step(0.2); }, 'small'), btn('⏩ Avancer de 6 h', () => { const l = loading('Simulation accélérée…'); setTimeout(() => { for (let i = 0; i < 1800; i++) S.step(0.2); l.done(); }, 30); }, 'small')),
-            h('h3', {}, 'Habitants'), h('div', { class: 'row' }, btn('👤 Ajouter un habitant', () => { close(); g.ui.cas.open({ mode: 'new' }); }, 'small'), btn('🎲 Ajouter un inconnu', () => this.addRandomSim(), 'small'), btn('🦊 Ajouter une créature', () => { W.d.critters ||= []; W.d.critters.push({ id: uid('cr'), kind: W.rng.chance(0.5) ? 'fox' : 'skeleton', x: g.rig.target.x, y: g.rig.target.z, tx: Math.floor(g.rig.target.x), ty: Math.floor(g.rig.target.z), rot: 0, state: 'idle', t: 0 }); }, 'small'),
+            h('h3', {}, 'Habitants'), h('div', { class: 'row' }, btn('👤 Ajouter un habitant', () => { close(); g.ui.cas.open({ mode: 'new' }); }, 'small'), btn('🎲 Ajouter un inconnu', () => this.addRandomSim(), 'small'), btn('🐾 Ajouter un animal', () => { W.d.critters ||= []; W.d.critters.push({ id: uid('cr'), kind: W.rng.pick(Object.keys(ANIMALS)), x: g.rig.target.x, y: g.rig.target.z, tx: Math.floor(g.rig.target.x), ty: Math.floor(g.rig.target.z), rot: 0, state: 'idle', t: 0 }); }, 'small'),
               registry.hasPowers() ? btn('🦹 Faire venir un super-vilain', () => S.powers.spawnVillain(), 'small') : null),
             h('h3', {}, 'Annulation'), h('div', { class: 'row' }, btn(`↩️ Annuler (${g.undoStack.length})`, () => { close(); g.undo(); }, 'small'), btn(`↪️ Rétablir (${g.redoStack.length})`, () => { close(); g.redo(); }, 'small')),
           );

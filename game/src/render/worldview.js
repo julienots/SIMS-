@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { registry } from '../mods/registry.js';
 import { WALL_STYLES, FLOOR_STYLES } from '../sim/data/objects.js';
+import { ANIMALS } from '../sim/data/animals.js';
 import { LEVEL_HEIGHT, LEVELS } from '../sim/world.js';
 import { objectModel, loadGLB } from './assets.js';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
@@ -494,6 +495,10 @@ export class WorldView {
     }
     const s = def?.scale || 1;
     model.scale.setScalar(s * (o.state?.size && def?.building ? o.state.size / (def.size[0]) : 1));
+    // sy : étirement vertical des meubles cartoon pour des humains à l'échelle réelle (plan de travail à 90 cm…).
+    if (def?.sy) model.scale.y *= def.sy;
+    // Assiettes : posées à la hauteur du plan (top) sur lequel elles sont servies, sinon au sol.
+    if (o.def === 'meal_plate') { const on = o.state?.on && this.world.objects.find(x => x.id === o.state.on); model.position.y = (on ? registry.object(on.def)?.top ?? 0.86 : 0) - 0.86; }
     if (def?.wall) model.position.set(0, def.wallY || 0, -0.5 * (def.size[1] || 1) + (def.model?.startsWith('proc:') ? 0.05 : 0.02));
     if (def?.flat) model.position.y = 0.01;
     holder.add(model);
@@ -540,18 +545,20 @@ export class WorldView {
     const list = this.world.d.critters || [];
     for (const c of list) {
       let v = this.critterViews.get(c.id);
+      const def = ANIMALS[c.kind] || ANIMALS.fox;
       if (!v) {
-        v = { group: new THREE.Group(), mixer: null, actions: {} };
+        v = { group: new THREE.Group(), mixer: null, actions: {}, rig: null, t: Math.random() * 100 };
         this.critterViews.set(c.id, v);
         this.root.add(v.group);
-        const path = c.kind === 'skeleton' ? 'characters/Skeleton_Minion' : 'animals/Fox';
-        Promise.all([loadGLB(path), c.kind === 'skeleton' ? loadGLB('characters/Skeleton_Warrior') : null]).then(([g, anim]) => {
+        Promise.all([loadGLB(def.model), c.kind === 'skeleton' ? loadGLB('characters/Skeleton_Warrior') : null]).then(([g, anim]) => {
           const m = skeletonClone(g.scene);
-          m.scale.setScalar(c.kind === 'skeleton' ? 0.55 : 0.012);
+          m.scale.setScalar(c.kind === 'skeleton' ? 0.55 : c.kind === 'fox' ? 0.012 : 1);
           m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
           v.group.add(m);
-          v.mixer = new THREE.AnimationMixer(m);
+          v.model = m;
           const clips = (anim || g).animations;
+          if (!clips.length) { v.rig = animalRig(m, v.group); return; }
+          v.mixer = new THREE.AnimationMixer(m);
           const find = n => clips.find(a => a.name === n);
           v.actions.idle = v.mixer.clipAction(find(c.kind === 'skeleton' ? 'Idle' : 'Survey') || clips[0]);
           v.actions.walk = v.mixer.clipAction(find(c.kind === 'skeleton' ? 'Walking_D_Skeletons' : 'Walk') || find('Walking_A') || clips[0]);
@@ -566,7 +573,7 @@ export class WorldView {
         const want = c.state === 'flee' ? 'run' : c.state === 'walk' ? 'walk' : 'idle';
         if (want !== v.cur && v.actions[want]) { v.actions[v.cur]?.fadeOut(0.3); v.actions[want].reset().fadeIn(0.3).play(); v.cur = want; }
         v.mixer.update(dt);
-      }
+      } else if (v.rig) animateRig(v, def, c.state, dt);
     }
   }
 
@@ -691,4 +698,50 @@ export class WorldView {
       if (o?.state && (o.state.burnt || o.state.frozen)) this.applyObjectState(o);
     }
   }
+}
+
+// ---------------------------------------------------------------- animation procédurale des animaux
+// Les animaux Rocketbox sont livrés riggés mais sans animation : on fait osciller pattes, tête et queue.
+const _q = new THREE.Quaternion();
+function animalRig(model, group) {
+  model.updateMatrixWorld(true);
+  const gq = group.getWorldQuaternion(new THREE.Quaternion());
+  const lateral = new THREE.Vector3(1, 0, 0).applyQuaternion(gq), up = new THREE.Vector3(0, 1, 0).applyQuaternion(gq);
+  const bones = {};
+  model.traverse(o => {
+    if (!o.isBone && o.type !== 'Object3D') return;
+    const n = o.name.replace(/_/g, ' ');
+    const key = /\bL Thigh$/.test(n) ? 'thighL' : /\bR Thigh$/.test(n) ? 'thighR' : /\bL Calf$/.test(n) ? 'calfL' : /\bR Calf$/.test(n) ? 'calfR'
+      : /\bL UpperArm$/.test(n) ? 'armL' : /\bR UpperArm$/.test(n) ? 'armR' : /\bL Forearm$/.test(n) ? 'foreL' : /\bR Forearm$/.test(n) ? 'foreR'
+      : /\bNeck$/.test(n) ? 'neck' : /\bHead$/.test(n) ? 'head' : /\bTail$/.test(n) ? 'tail' : /\bTail1$/.test(n) ? 'tail1' : null;
+    if (!key || bones[key] || !o.parent) return;
+    const pq = o.parent.getWorldQuaternion(new THREE.Quaternion()).invert();
+    bones[key] = { o, rest: o.quaternion.clone(), lat: lateral.clone().applyQuaternion(pq).normalize(), up: up.clone().applyQuaternion(pq).normalize() };
+  });
+  return Object.keys(bones).length >= 4 ? bones : null;
+}
+function turn(b, axis, a) { if (b) b.o.quaternion.copy(_q.setFromAxisAngle(b[axis], a)).multiply(b.rest); }
+function animateRig(v, def, state, dt) {
+  const r = v.rig, moving = state === 'walk' || state === 'flee';
+  v.blend = THREE.MathUtils.damp(v.blend || 0, moving ? 1 : 0, 6, dt);
+  v.t += dt * (def.gait || 1.5) * (state === 'flee' ? 1.8 : 1);
+  const p = v.t * Math.PI * 2, amp = (state === 'flee' ? 0.55 : 0.32) * v.blend;
+  if (def.biped) {
+    turn(r.thighL, 'lat', Math.sin(p) * amp); turn(r.thighR, 'lat', Math.sin(p + Math.PI) * amp);
+  } else {
+    turn(r.armL, 'lat', Math.sin(p) * amp); turn(r.armR, 'lat', Math.sin(p + Math.PI) * amp);
+    turn(r.thighL, 'lat', Math.sin(p + Math.PI) * amp); turn(r.thighR, 'lat', Math.sin(p) * amp);
+    turn(r.foreL, 'lat', Math.max(0, Math.sin(p + 0.6)) * amp * 0.7); turn(r.foreR, 'lat', Math.max(0, Math.sin(p + Math.PI + 0.6)) * amp * 0.7);
+    turn(r.calfL, 'lat', -Math.max(0, Math.sin(p + Math.PI + 0.6)) * amp * 0.6); turn(r.calfR, 'lat', -Math.max(0, Math.sin(p + 0.6)) * amp * 0.6);
+  }
+  // Tête : regarde autour, ou broute (herbivores) quand l'animal est à l'arrêt.
+  const slow = v.t / (def.gait || 1.5);
+  const graze = def.graze && !moving ? Math.max(0, Math.sin(slow * 0.35)) : 0;
+  v.graze = THREE.MathUtils.damp(v.graze || 0, graze, 3, dt);
+  turn(r.neck, 'lat', v.graze * 0.9);
+  turn(r.head, 'up', Math.sin(slow * 0.5) * 0.35 * (1 - v.blend));
+  turn(r.tail, 'up', Math.sin(v.t * Math.PI * (def.rig ? 3 : 1.2)) * (def.rig ? 0.5 : 0.25));
+  if (def.tailDrop && r.tail) r.tail.o.quaternion.premultiply(_q.setFromAxisAngle(r.tail.lat, def.tailDrop));
+  turn(r.tail1, 'up', Math.sin(v.t * Math.PI * (def.rig ? 3 : 1.2) - 0.8) * 0.3);
+  if (v.model) v.model.position.y = Math.abs(Math.sin(p)) * 0.025 * v.blend;
 }

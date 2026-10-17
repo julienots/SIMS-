@@ -73,6 +73,8 @@ for (const a of list('avatars.txt')) {
   const glb = fbx2glb(fbx, a);
   const doc = await io.read(glb);
   for (const an of doc.getRoot().listAnimations()) an.dispose();
+  // Les enfants ont un squelette « Bip02 » : on le renomme pour partager la bibliothèque d'animations « Bip01 ».
+  for (const nd of doc.getRoot().listNodes()) nd.setName(nd.getName().replace(/^Bip02\b/, 'Bip01'));
   await texturize(doc, find(path.join(dir, 'Textures'), /_color\.tga$/i));
   await doc.transform(dedup(), prune());
   await io.write(`${OUT}/${a}.glb`, doc);

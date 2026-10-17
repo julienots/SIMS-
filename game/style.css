@@ -175,3 +175,8 @@ label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 700;
   .cas-panel { width: min(560px, 64vw); }
   .clock { font-size: 16px; min-width: 50px; }
 }
+
+.grid.bodies { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+.body-card { padding: 6px; text-align: center; }
+.body-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; display: block; background: #222; }
+.body-card .title { font-size: 12px; }
