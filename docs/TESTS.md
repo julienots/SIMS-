@@ -17,7 +17,10 @@
 - **menu** : écran SUPERESSENCE STUDIO, menu principal.
 - **world** : assistant de création → monde rendu (355 appels de rendu, ~104 k triangles).
 - **sims** : habitants animés (idle, assis au restaurant, sieste, peinture).
-- **cas** : créateur — 5 morphologies, couleurs peau/cheveux/tenue réellement appliquées au modèle, accessoires.
+- **cas** : créateur — vignettes des 39 corps réalistes Rocketbox (policière, enfants animés…), style cartoon et ses couleurs, accessoires.
+- **animals** : les 11 espèces d'un monde généré (Rocketbox + renard), animation procédurale des pattes/tête/queue.
+- **sit** / **scale** : hauteur d'assise des humains réalistes sur une chaise, proportions plan de cuisson / humain.
+- **horse** : vérification d'une espèce isolée.
 - **play** : clic sur le frigo → menu radial → action dans la file ; menu social ; boule de feu ; vol ; pièce construite par glisser ; canapé acheté ; contrôle direct au clavier.
 - **gamepad** : manette simulée via la passerelle Android (`NativePad`) et via l’API Gamepad standard : navigation des menus (croix, A, B), curseur au stick, vitesse (RB), contrôle direct (Y), déplacement au stick, interaction (A), sortie (B), pause (Menu).
 - **panels** : mods, journal, créatif, monde, relations, pouvoirs, nuit tropicale, affichage mobile 844×390.

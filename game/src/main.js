@@ -167,7 +167,8 @@ class App {
         h('p', {}, h('b', {}, 'MYLIFE UNIVERSE'), ' — un jeu SUPERESSENCE STUDIO.'),
         h('h3', {}, 'Modèles 3D (licence CC0 sauf mention)'),
         h('ul', {}, ...[
-          'Personnages, animations, meubles, cuisine, ville, base spatiale : KayKit par Kay Lousberg (kaylousberg.com) — CC0',
+          'Humains réalistes, animations de capture de mouvement et animaux : Microsoft Rocketbox Avatar Library — Copyright (c) Microsoft Corporation, licence MIT (github.com/microsoft/Microsoft-Rocketbox)',
+          'Personnages cartoon, animations, meubles, cuisine, ville, base spatiale : KayKit par Kay Lousberg (kaylousberg.com) — CC0',
           'Arbres et fontaine : Kenney (kenney.nl), Starter Kit City Builder — CC0',
           'Renard animé : modèle de PixelMannen (CC0), rig et animations de @tomkranis (CC BY 4.0), conversion glTF par @AsoboStudio et @scurest (CC BY 4.0) — Khronos glTF Sample Assets',
           'Objets sans asset libre disponible (toilettes, douche, télévision, ordinateur, instruments…) : modèles procéduraux créés pour le jeu',
