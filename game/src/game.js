@@ -213,7 +213,7 @@ export class Game {
     for (const [id, v] of this.simViews) {
       if (!v.group.visible) continue;
       const s = this.world.sim(id);
-      const scale = v.baseScale ? v.baseScale / 0.7 : 1;
+      const scale = v.pickScale || 1;
       for (const hgt of [0.4, 0.9, 1.4].map(k => k * scale)) {
         tmp.set(v.group.position.x, v.group.position.y + hgt, v.group.position.z);
         const d2 = ray.distanceSqToPoint(tmp);

@@ -8,6 +8,35 @@ export const FIRST_M = ['Hugo', 'Lucas', 'Nathan', 'Léo', 'Adam', 'Noah', 'Tom'
 export const FIRST_X = ['Alex', 'Charlie', 'Sam', 'Eden', 'Noa', 'Andrea', 'Morgan', 'Ash', 'Robin', 'Lior'];
 export const LAST = ['Martin', 'Bernard', 'Dubois', 'Lefèvre', 'Moreau', 'Laurent', 'Garcia', 'Nguyen', 'Diallo', 'Rossi', 'Kowalski', 'Tanaka', 'Benali', 'Silva', 'Fontaine', 'Mercier', 'Chevalier', 'Blanc', 'Okafor', 'Lambert'];
 
+// Personnages humains réalistes Microsoft Rocketbox (licence MIT) : corps, visage et tenue d'origine.
+const RB = (id, name, gender, age, group) => ({ id, name, gender, age, group, real: true });
+export const REAL_BODIES = [
+  ...Array.from({ length: 10 }, (_, i) => RB(`Female_Adult_${String(i + 1).padStart(2, '0')}`, `Femme ${i + 1}`, 'f', 'adult', 'Adultes')),
+  ...Array.from({ length: 10 }, (_, i) => RB(`Male_Adult_${String(i + 1).padStart(2, '0')}`, `Homme ${i + 1}`, 'm', 'adult', 'Adultes')),
+  RB('Female_Party_01', 'Tenue de soirée', 'f', 'adult', 'Adultes'),
+  RB('Business_Female_01', 'Femme d’affaires', 'f', 'adult', 'Métiers'), RB('Business_Male_01', 'Homme d’affaires', 'm', 'adult', 'Métiers'),
+  RB('Chef_Female_01', 'Cheffe cuisinière', 'f', 'adult', 'Métiers'), RB('Medical_Female_01', 'Médecin (femme)', 'f', 'adult', 'Métiers'),
+  RB('Medical_Male_01', 'Médecin (homme)', 'm', 'adult', 'Métiers'), RB('Police_Female_01', 'Policière', 'f', 'adult', 'Métiers'),
+  RB('Police_Male_01', 'Policier', 'm', 'adult', 'Métiers'), RB('Sports_Female_01', 'Sportive', 'f', 'adult', 'Métiers'),
+  RB('Sports_Male_01', 'Sportif', 'm', 'adult', 'Métiers'), RB('Construction_Male_01', 'Ouvrier du bâtiment', 'm', 'adult', 'Métiers'),
+  RB('Fire_Male_01', 'Pompier', 'm', 'adult', 'Métiers'), RB('Gardener_Male_01', 'Jardinier', 'm', 'adult', 'Métiers'),
+  RB('Pilot_Male_01', 'Pilote', 'm', 'adult', 'Métiers'), RB('Military_Male_01', 'Militaire', 'm', 'adult', 'Métiers'),
+  RB('Female_Child_01', 'Fille 1', 'f', 'child', 'Enfants'), RB('Female_Child_02', 'Fille 2', 'f', 'child', 'Enfants'),
+  RB('Male_Child_01', 'Garçon 1', 'm', 'child', 'Enfants'), RB('Male_Child_02', 'Garçon 2', 'm', 'child', 'Enfants'),
+];
+export const isRealBody = id => REAL_BODIES.some(b => b.id === id);
+export const realBody = id => REAL_BODIES.find(b => b.id === id);
+// Corps adapté au sexe et à l'âge (les vêtements des métiers sont réservés aux sims de ce métier).
+export function pickRealBody(rng, gender, stage, career) {
+  const child = ['baby', 'child'].includes(stage);
+  const prof = { chef: ['Chef_Female_01'], athlete: ['Sports_Female_01', 'Sports_Male_01'], employee: ['Business_Female_01', 'Business_Male_01'], entrepreneur: ['Business_Female_01', 'Business_Male_01'], scientist: ['Medical_Female_01', 'Medical_Male_01'] }[career];
+  let pool = REAL_BODIES.filter(b => (child ? b.age === 'child' : b.age === 'adult' && b.group === 'Adultes') && (gender === 'x' || b.gender === gender));
+  if (!child && prof && rng.chance(0.5)) { const p = REAL_BODIES.filter(b => prof.includes(b.id) && (gender === 'x' || b.gender === gender)); if (p.length) pool = p; }
+  if (!pool.length) pool = REAL_BODIES.filter(b => (child ? b.age === 'child' : b.age === 'adult'));
+  return rng.pick(pool).id;
+}
+
+// Corps « cartoon » KayKit (style alternatif).
 export const BODIES = [
   { id: 'Knight', name: 'Athlétique' },
   { id: 'Barbarian', name: 'Costaud' },
@@ -72,6 +101,9 @@ export function createSim(rng, opts = {}) {
   needs.safety = 90;
   const skills = {};
   for (const s of registry.skills.values()) skills[s.id] = rng.chance(0.35) ? rng.range(0, 3) : 0;
+  // Corps réaliste par défaut, choisi selon le sexe, l'âge et le métier.
+  const appearance = opts.appearance || defaultAppearance(rng);
+  if (!opts.appearance) { appearance.body = pickRealBody(rng, gender, stage, opts.career); appearance.hat = false; appearance.cape = false; appearance.extras = rng.chance(0.25) ? [rng.pick(['glasses', 'sunglasses', 'cap', 'headphones', 'necklace'])] : []; }
   const sim = {
     id: uid('sim'),
     first, last: opts.last || rng.pick(LAST), gender,
@@ -84,7 +116,7 @@ export function createSim(rng, opts = {}) {
     needs,
     moodlets: [],
     emotion: 'fine',
-    appearance: opts.appearance || defaultAppearance(rng),
+    appearance,
     likes: { music: rng.pick(LIKES.music), activity: rng.pick(LIKES.activities), color: rng.pick(LIKES.colors) },
     dislikes: { activity: rng.pick(LIKES.activities) },
     fears: [rng.pick(FEARS)],
@@ -140,6 +172,7 @@ export function childOf(rng, a, b) {
     },
   });
   sim.career = { id: 'unemployed', level: 0, perf: 0, days: 0 };
+  sim.appearance.body = pickRealBody(rng, sim.gender, 'child');
   sim.likes.music = mix(a.likes.music, b.likes.music);
   sim.parents = [a.id, b.id];
   return sim;

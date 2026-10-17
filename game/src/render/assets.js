@@ -49,7 +49,15 @@ export const CHAR_SCALE = 0.7;
 const ANIM_SOURCE = { Knight: 'characters/Knight', Mage: 'characters/Knight', Rogue: 'characters/Knight', Rogue_Hooded: 'characters/Knight', Barbarian: 'characters/Knight',
   Skeleton_Warrior: 'characters/Skeleton_Warrior', Skeleton_Mage: 'characters/Skeleton_Warrior', Skeleton_Minion: 'characters/Skeleton_Warrior', Skeleton_Rogue: 'characters/Skeleton_Warrior' };
 
+// Personnages réalistes Rocketbox : modèle + bibliothèque d'animations du même squelette (Biped).
+const REAL_IDS = new Set();
+export function registerRealBodies(list) { for (const b of list) REAL_IDS.add(b.id); }
 export async function characterTemplate(body) {
+  if (REAL_IDS.has(body)) {
+    const female = /female/i.test(body);
+    const [gltf, animG] = await Promise.all([loadGLB(`real/${body}`), loadGLB(`real/anims_${female ? 'f' : 'm'}`)]);
+    return { scene: gltf.scene, animations: animG.animations, real: true };
+  }
   const path = `characters/${body}`;
   const [gltf, animG] = await Promise.all([loadGLB(path), loadGLB(ANIM_SOURCE[body] || 'characters/Knight')]);
   return { scene: gltf.scene, animations: animG.animations };
@@ -173,5 +181,20 @@ export const ANIM_MAP = {
   hammer: '1H_Melee_Attack_Chop', throw: 'Throw', hit: 'Hit_A', hit_hard: 'Hit_B', block: 'Blocking', cast: 'Spellcast_Shoot', cast_long: 'Spellcasting',
   cast_raise: 'Spellcast_Raise', jump: 'Jump_Idle', fly: 'Jump_Idle', dodge: 'Dodge_Forward', punch: 'Unarmed_Melee_Attack_Punch_B', kick: 'Unarmed_Melee_Attack_Kick',
   faint: 'Death_A', scared: 'Block', angry: 'Unarmed_Melee_Attack_Punch_A', laugh: 'Cheer', refuse: 'Hit_B', sad: 'Sit_Floor_Idle',
+  listen: 'Idle', phone: 'Interact', music: 'Idle', photo: 'Interact', think: 'Idle', clap: 'Cheer', yawn: 'Idle', accept: 'Cheer', shrug: 'Idle', idle2: 'Idle',
 };
+// Animations réalistes (Rocketbox) : plusieurs variantes possibles, choisies selon l'émotion.
+export const REAL_ANIM_MAP = {
+  idle: 'idle_neutral_01', idle2: 'idle_look_around_01', walk: 'walk_neutral_01', run: 'run_neutral_01',
+  sit: 'sit_chair_idle_neutral_01', sit_down: 'sit_down_chair_01', stand_up: 'sit_stand_up_chair_01', sit_use: 'sit_table_idle_neutral_01',
+  sit_floor: 'crouch_idle', lie: 'idle_breathe_01', lie_down: 'idle_breathe_01', lie_up: 'idle_breathe_01', faint: 'idle_breathe_01',
+  talk: 'gestic_talk_neutral_01', listen: 'gestic_listen_neutral_01', cheer: 'cheer_01', interact: 'work_table', use: 'drink_drinking',
+  pickup: 'crouch_idle', wave: 'wave_01', dance: 'dancing_neutral', workout: 'run_neutral_01', hammer: 'work_table', throw: 'gestic_presentation_right_01',
+  hit: 'gestic_listen_deny_01', hit_hard: 'gestic_listen_deny_01', block: 'idle_nervous_01', cast: 'gestic_presentation_right_01',
+  cast_long: 'gestic_presentation_right_01', cast_raise: 'cheer_01', jump: 'cheer_01', fly: 'idle_breathe_01', dodge: 'idle_nervous_01',
+  punch: 'gestic_talk_angry_01', kick: 'gestic_talk_angry_01', scared: 'idle_nervous_01', angry: 'idle_angry_01', laugh: 'gestic_laugh_loud',
+  refuse: 'gestic_listen_deny_01', sad: 'gestic_talk_sad_01', phone: 'cell_phone_talk_01', music: 'headphones_idle', photo: 'take_picture',
+  think: 'gestic_thoughtful_01', clap: 'claphands_01', yawn: 'idle_yawn_01', accept: 'gestic_listen_accept_01', shrug: 'gestic_shrug_01', run_run: 'run_neutral_01',
+};
+export const REAL_TALK = { angry: 'gestic_talk_angry_01', happy: 'gestic_talk_excited_01', playful: 'gestic_talk_excited_01', confident: 'gestic_talk_neutral_02', sad: 'gestic_talk_sad_01', flirty: 'gestic_talk_excited_01' };
 export const ONE_SHOT = new Set(['sit_down', 'stand_up', 'lie_down', 'lie_up', 'pickup', 'hit', 'hit_hard', 'throw', 'faint']);

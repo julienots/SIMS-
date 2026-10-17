@@ -1,0 +1,250 @@
+{
+ "avatars": [
+  {
+   "id": "Female_Adult_01",
+   "gender": "f",
+   "age": "adult",
+   "size": 1006416
+  },
+  {
+   "id": "Female_Adult_02",
+   "gender": "f",
+   "age": "adult",
+   "size": 946376
+  },
+  {
+   "id": "Female_Adult_03",
+   "gender": "f",
+   "age": "adult",
+   "size": 1094688
+  },
+  {
+   "id": "Female_Adult_04",
+   "gender": "f",
+   "age": "adult",
+   "size": 1091660
+  },
+  {
+   "id": "Female_Adult_05",
+   "gender": "f",
+   "age": "adult",
+   "size": 1120724
+  },
+  {
+   "id": "Female_Adult_06",
+   "gender": "f",
+   "age": "adult",
+   "size": 944140
+  },
+  {
+   "id": "Female_Adult_07",
+   "gender": "f",
+   "age": "adult",
+   "size": 1003524
+  },
+  {
+   "id": "Female_Adult_08",
+   "gender": "f",
+   "age": "adult",
+   "size": 994332
+  },
+  {
+   "id": "Female_Adult_09",
+   "gender": "f",
+   "age": "adult",
+   "size": 1039712
+  },
+  {
+   "id": "Female_Adult_10",
+   "gender": "f",
+   "age": "adult",
+   "size": 602864
+  },
+  {
+   "id": "Male_Adult_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 950844
+  },
+  {
+   "id": "Male_Adult_02",
+   "gender": "m",
+   "age": "adult",
+   "size": 902112
+  },
+  {
+   "id": "Male_Adult_03",
+   "gender": "m",
+   "age": "adult",
+   "size": 1112048
+  },
+  {
+   "id": "Male_Adult_04",
+   "gender": "m",
+   "age": "adult",
+   "size": 954264
+  },
+  {
+   "id": "Male_Adult_05",
+   "gender": "m",
+   "age": "adult",
+   "size": 1013340
+  },
+  {
+   "id": "Male_Adult_06",
+   "gender": "m",
+   "age": "adult",
+   "size": 1067264
+  },
+  {
+   "id": "Male_Adult_07",
+   "gender": "m",
+   "age": "adult",
+   "size": 770460
+  },
+  {
+   "id": "Male_Adult_08",
+   "gender": "m",
+   "age": "adult",
+   "size": 890132
+  },
+  {
+   "id": "Male_Adult_09",
+   "gender": "m",
+   "age": "adult",
+   "size": 864268
+  },
+  {
+   "id": "Male_Adult_10",
+   "gender": "m",
+   "age": "adult",
+   "size": 793076
+  },
+  {
+   "id": "Female_Party_01",
+   "gender": "f",
+   "age": "adult",
+   "size": 1271504
+  },
+  {
+   "id": "Female_Child_01",
+   "gender": "f",
+   "age": "child",
+   "size": 613764
+  },
+  {
+   "id": "Female_Child_02",
+   "gender": "f",
+   "age": "child",
+   "size": 579852
+  },
+  {
+   "id": "Male_Child_01",
+   "gender": "m",
+   "age": "child",
+   "size": 584248
+  },
+  {
+   "id": "Male_Child_02",
+   "gender": "m",
+   "age": "child",
+   "size": 615836
+  },
+  {
+   "id": "Business_Female_01",
+   "gender": "f",
+   "age": "adult",
+   "size": 1004784
+  },
+  {
+   "id": "Business_Male_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 918912
+  },
+  {
+   "id": "Chef_Female_01",
+   "gender": "f",
+   "age": "adult",
+   "size": 507776
+  },
+  {
+   "id": "Medical_Female_01",
+   "gender": "f",
+   "age": "adult",
+   "size": 921056
+  },
+  {
+   "id": "Medical_Male_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 1053184
+  },
+  {
+   "id": "Police_Female_01",
+   "gender": "f",
+   "age": "adult",
+   "size": 1372424
+  },
+  {
+   "id": "Police_Male_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 734652
+  },
+  {
+   "id": "Sports_Female_01",
+   "gender": "f",
+   "age": "adult",
+   "size": 691600
+  },
+  {
+   "id": "Sports_Male_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 555300
+  },
+  {
+   "id": "Construction_Male_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 1528736
+  },
+  {
+   "id": "Fire_Male_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 752828
+  },
+  {
+   "id": "Gardener_Male_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 957416
+  },
+  {
+   "id": "Pilot_Male_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 588712
+  },
+  {
+   "id": "Military_Male_01",
+   "gender": "m",
+   "age": "adult",
+   "size": 1268476
+  }
+ ],
+ "animals": [
+  "Dog_Beagle_01",
+  "Dog_GermanShepard_01",
+  "Horse_Brown_01",
+  "Cow_Brown_01",
+  "Sheep_White_01",
+  "Pig_Pink_01",
+  "Goat_White_01",
+  "Deer_Roe_Tabby_01",
+  "Bird_Chicken_White_01",
+  "Bird_Duck_Male_01"
+ ]
+}

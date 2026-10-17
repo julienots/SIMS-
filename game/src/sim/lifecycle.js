@@ -2,7 +2,7 @@
 import { clamp, dist, DAYS } from '../core/util.js';
 import { registry } from '../mods/registry.js';
 import { LIFE_STAGES, SKILL_MAX } from './data/core-data.js';
-import { childOf } from './factory.js';
+import { childOf, pickRealBody, isRealBody } from './factory.js';
 import { simName, isAdult } from './simulation.js';
 import { LEVEL_HEIGHT } from './world.js';
 
@@ -180,7 +180,9 @@ export class LifeSystem {
       const cs = [...registry.careers.values()].filter(c => c.id !== 'unemployed');
       s.career = { id: this.w.rng.pick(cs).id, level: 0, perf: 0, days: 0 };
     }
-    if (next === 'elder') s.appearance.hair = '#d9d9d9';
+    if (next === 'elder') { s.appearance.hair = '#d9d9d9'; s.appearance.hairTint = true; }
+    // Passage à l'adolescence : un corps d'adulte remplace le modèle d'enfant.
+    if (next === 'teen' && isRealBody(s.appearance.body) && /child/i.test(s.appearance.body)) s.appearance.body = pickRealBody(this.w.rng, s.gender, 'teen');
     const st = LIFE_STAGES.find(x => x.id === next);
     this.w.log('life', `🎂 ${simName(s)} grandit et devient ${st.name.toLowerCase()}.`, [s.id], { icon: '🎂', important: true });
     this.S.emit('appearance', s);

@@ -1,0 +1,10 @@
+Dog_Beagle_01
+Dog_GermanShepard_01
+Horse_Brown_01
+Cow_Brown_01
+Sheep_White_01
+Pig_Pink_01
+Goat_White_01
+Deer_Roe_Tabby_01
+Bird_Chicken_White_01
+Bird_Duck_Male_01

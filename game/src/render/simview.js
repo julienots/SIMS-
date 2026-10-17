@@ -1,10 +1,17 @@
 // Rendu des habitants : modèle riggé KayKit, animations, couleurs, proportions, accessoires,
 // mutations (mod), bulles de pensée, indicateur de sélection et effets d'activité.
 import * as THREE from 'three';
-import { characterTemplate, cloneCharacter, recoloredTexture, ANIM_MAP, ONE_SHOT, CHAR_SCALE } from './assets.js';
+import { characterTemplate, cloneCharacter, recoloredTexture, ANIM_MAP, ONE_SHOT, CHAR_SCALE, REAL_ANIM_MAP, REAL_TALK } from './assets.js';
+
+// Os du squelette Biped (personnages réalistes) correspondant aux os utilisés par le jeu.
+const BIPED = { head: 'Bip01_Head', chest: 'Bip01_Spine2', spine: 'Bip01_Spine', hips: 'Bip01_Pelvis', handl: 'Bip01_L_Hand', handr: 'Bip01_R_Hand' };
+const LIE = new Set(['lie', 'lie_down', 'lie_up', 'faint']);
 import { mat } from './procmodels.js';
 import { LIFE_STAGES } from '../sim/data/core-data.js';
 import { registry } from '../mods/registry.js';
+import { REAL_BODIES } from '../sim/factory.js';
+import { registerRealBodies } from './assets.js';
+registerRealBodies(REAL_BODIES);
 
 const WEAPONS = /sword|shield|staff|wand|spellbook|knife|throwable|crossbow|axe|mug|arrow|quiver|blade/i;
 const HATS = /helmet|_hat|hood/i;
@@ -80,29 +87,48 @@ export class SimView {
     if (this.model) { this.inner.remove(this.model); this.mixer?.stopAllAction(); }
     const model = cloneCharacter(tpl);
     this.model = model;
-    // Visibilité des accessoires d'origine.
-    model.traverse(o => {
-      if (!o.isMesh && !o.isSkinnedMesh) return;
-      const n = o.name || o.parent?.name || '';
-      if (WEAPONS.test(n)) o.visible = false;
-      else if (HATS.test(n)) o.visible = !!ap.hat;
-      else if (CAPES.test(n)) o.visible = !!ap.cape;
-    });
-    // Recoloration (après la visibilité, pour n'analyser que les maillages affichés).
-    model.traverse(o => {
-      if ((!o.isMesh && !o.isSkinnedMesh) || !o.material?.map) return;
-      o.material = o.material.clone();
-      o.material.map = recoloredTexture(o.material.map, ap, ap.body, tpl.scene);
-      if (monster) o.material.emissive = new THREE.Color('#123b10');
-    });
-    this.bones = {};
-    model.traverse(o => { if (o.isBone) this.bones[o.name] = o; });
-    this.inner.add(model);
-    // Échelle selon l'âge et la taille.
+    this.real = !!tpl.real;
     const stage = LIFE_STAGES.find(x => x.id === s.stage) || { scale: 1 };
-    this.baseScale = CHAR_SCALE * stage.scale * (ap.height || 1) * (monster ? 1.45 : 1);
+    this.bones = {};
+    model.traverse(o => { if (o.isBone || /^Bip01/.test(o.name)) this.bones[o.name] = o; });
+    if (this.real) {
+      // Modèle réaliste : textures d'origine ; seule la teinte des cheveux peut être ajustée.
+      model.traverse(o => {
+        if ((!o.isMesh && !o.isSkinnedMesh) || !o.material) return;
+        o.material = o.material.clone();
+        if (ap.hairTint && /opacity/i.test(o.material.name)) o.material.color = new THREE.Color(ap.hair);
+        if (monster) { o.material.color = new THREE.Color('#7fd06a'); o.material.emissive = new THREE.Color('#0d2a08'); }
+      });
+      for (const [k, n] of Object.entries(BIPED)) if (this.bones[n]) this.bones[k] = this.bones[n];
+      const childBody = /child/i.test(ap.body);
+      const ageScale = s.stage === 'baby' ? 0.42 : childBody ? 1 : s.stage === 'teen' ? 0.94 : s.stage === 'child' ? 0.72 : s.stage === 'elder' ? 0.97 : 1;
+      this.baseScale = ageScale * (ap.height || 1) * (monster ? 1.35 : 1);
+      this.heightM = 1.72 * this.baseScale * (childBody ? 0.75 : 1);
+      this.headScale = ap.head || 1;
+      this.rootRef = this.bones.Bip01?.position.length() || 1;
+    } else {
+      // Visibilité des accessoires d'origine.
+      model.traverse(o => {
+        if (!o.isMesh && !o.isSkinnedMesh) return;
+        const n = o.name || o.parent?.name || '';
+        if (WEAPONS.test(n)) o.visible = false;
+        else if (HATS.test(n)) o.visible = !!ap.hat;
+        else if (CAPES.test(n)) o.visible = !!ap.cape;
+      });
+      // Recoloration (après la visibilité, pour n'analyser que les maillages affichés).
+      model.traverse(o => {
+        if ((!o.isMesh && !o.isSkinnedMesh) || !o.material?.map) return;
+        o.material = o.material.clone();
+        o.material.map = recoloredTexture(o.material.map, ap, ap.body, tpl.scene);
+        if (monster) o.material.emissive = new THREE.Color('#123b10');
+      });
+      this.baseScale = CHAR_SCALE * stage.scale * (ap.height || 1) * (monster ? 1.45 : 1);
+      this.heightM = 2.3 * this.baseScale;
+      this.headScale = (ap.head || 1) * (s.stage === 'child' ? 1.25 : s.stage === 'baby' ? 1.4 : 1);
+    }
+    this.pickScale = this.heightM / 1.6;
+    this.inner.add(model);
     this.inner.scale.setScalar(this.baseScale);
-    this.headScale = (ap.head || 1) * (s.stage === 'child' ? 1.25 : s.stage === 'baby' ? 1.4 : 1);
     this.ap = ap;
     // Animations.
     this.mixer = new THREE.AnimationMixer(model);
@@ -116,32 +142,59 @@ export class SimView {
     this.play(this.sim._rt?.anim || 'idle', true);
   }
 
+  clipName(name) {
+    if (!this.real) return ANIM_MAP[name] || 'Idle';
+    if (name === 'talk') return REAL_TALK[this.sim.emotion] || (this.talkAlt ? 'gestic_talk_neutral_02' : 'gestic_talk_neutral_01');
+    if (name === 'idle' && this.sim.needs?.sleep < 20) return 'idle_yawn_01';
+    if (name === 'idle' && this.sim.emotion === 'angry') return 'idle_angry_01';
+    if (name === 'idle' && ['tense', 'scared'].includes(this.sim.emotion)) return 'idle_nervous_01';
+    if (name === 'dance' && this.danceAlt) return 'dancing_cool';
+    return REAL_ANIM_MAP[name] || 'idle_neutral_01';
+  }
+
   clip(name) {
-    const clipName = ANIM_MAP[name] || 'Idle';
+    const clipName = this.clipName(name);
     if (!this.actions[clipName]) {
-      const c = this.clips.find(a => a.name === clipName) || this.clips.find(a => a.name === 'Idle');
+      let c = this.clips.find(a => a.name === clipName) || this.clips.find(a => a.name === (this.real ? 'idle_neutral_01' : 'Idle'));
       if (!c) return null;
+      if (this.real) c = this.fitClip(c);
       const act = this.mixer.clipAction(c);
-      if (ONE_SHOT.has(name)) { act.setLoop(THREE.LoopOnce, 1); act.clampWhenFinished = true; }
+      if (ONE_SHOT.has(name) && !LIE.has(name)) { act.setLoop(THREE.LoopOnce, 1); act.clampWhenFinished = true; }
       this.actions[clipName] = act;
     }
     return this.actions[clipName];
   }
 
+  // Adapte la translation de la racine à la taille du personnage (enfants, adultes de tailles différentes).
+  fitClip(c) {
+    const tr = c.tracks.find(t => t.name === 'Bip01.position');
+    if (!tr) return c;
+    const v = tr.values;
+    const ref = Math.hypot(v[0], v[1], v[2]) || 1;
+    const k = this.rootRef / ref;
+    if (Math.abs(k - 1) < 0.02) return c;
+    const cc = c.clone();
+    const t2 = cc.tracks.find(t => t.name === 'Bip01.position');
+    t2.values = Float32Array.from(t2.values, x => x * k);
+    return cc;
+  }
+
   play(name, instant) {
     if (!this.ready) return;
-    const key = ONE_SHOT.has(name) ? name : ANIM_MAP[name] || 'Idle';
+    const key = ONE_SHOT.has(name) && !LIE.has(name) ? name : this.clipName(name);
     if (key === this.curKey) return;
     const act = this.clip(name);
     if (!act) return;
     const prev = this.cur;
     act.reset();
-    act.timeScale = name === 'dance' ? 1.3 : name === 'workout' ? 1.1 : 1;
+    act.timeScale = name === 'dance' ? 1.15 : name === 'workout' ? 1.1 : 1;
     act.play();
-    if (prev && prev !== act && !instant) { act.crossFadeFrom(prev, 0.25, false); }
+    if (prev && prev !== act && !instant) { act.crossFadeFrom(prev, 0.3, false); }
     else if (prev && prev !== act) prev.stop();
     this.cur = act;
     this.curKey = key;
+    if (name === 'talk') this.talkAlt = !this.talkAlt;
+    if (name === 'dance') this.danceAlt = Math.random() < 0.5;
   }
 
   // ---------------------------------------------------------------- accessoires
@@ -151,7 +204,13 @@ export class SimView {
     if (this.extras) this.extras.parent?.remove(this.extras);
     const ex = new THREE.Group();
     this.extras = ex;
-    head.add(ex);
+    if (this.real) {
+      // Squelette Biped : on suit la position de la tête, orienté comme le personnage (repère commun aux accessoires).
+      ex.scale.setScalar(0.2);
+      ex.userData.follow = head;
+      ex.userData.offset = new THREE.Vector3(0, -0.03, 0.0);
+      this.inner.add(ex);
+    } else head.add(ex);
     // Repère du visage (espace de l'os de la tête) : yeux à ~0,42, bouche à ~0,2, face vers +z.
     const fy = 0.55, fz = 0.5, eyeY = 0.42, mouthY = 0.24;
     const hair = new THREE.Color(ap.hair || '#4a2e1c');
@@ -209,7 +268,8 @@ export class SimView {
     if (!chest) return;
     const g = new THREE.Group();
     this.mutGroup = g;
-    chest.add(g);
+    if (this.real) { g.scale.setScalar(0.42); g.userData.follow = chest; g.userData.offset = new THREE.Vector3(0, -0.1, 0); this.inner.add(g); }
+    else chest.add(g);
     const skin = this.ap?.skin || '#f6c9a3';
     for (const m of muts) {
       if (m === 'wings') {
@@ -264,28 +324,50 @@ export class SimView {
     if (rt.vfx?.flying && (anim === 'walk' || anim === 'run' || anim === 'idle')) anim = 'fly';
     this.play(anim);
     if (this.frame % every === 0) this.mixer.update(dt * every);
+    // Allongé (lit, baignoire) : les animations réalistes n'ont pas de pose couchée, on bascule le corps.
+    const lying = this.real && LIE.has(anim);
+    if (lying !== !!this.lying) {
+      this.lying = lying;
+      this.model.rotation.x = lying ? -Math.PI / 2 : 0;
+      this.model.position.set(0, lying ? 0.12 : 0, lying ? 0.85 : 0);
+    }
+    // Les accessoires des modèles réalistes suivent les os.
+    for (const anchor of [this.extras, this.mutGroup]) {
+      const f = anchor?.userData.follow;
+      if (!f) continue;
+      f.getWorldPosition(this._tmpV ||= new THREE.Vector3());
+      this.inner.worldToLocal(this._tmpV);
+      anchor.position.copy(this._tmpV).add(anchor.userData.offset);
+      if (this.lying) { anchor.rotation.x = -Math.PI / 2; } else anchor.rotation.x = 0;
+    }
     // Proportions (après l'animation).
     const ap = this.ap || {};
     const b = this.bones;
-    if (b.head) b.head.scale.setScalar(this.headScale || 1);
+    if (this.real) {
+      if (b.head) b.head.scale.setScalar(this.headScale || 1);
+      const w = Math.sqrt((ap.shoulders || 1) * (ap.build || 1));
+      if (b.spine) b.spine.scale.set(1, w, w);
+    } else if (b.head) b.head.scale.setScalar(this.headScale || 1);
+    if (!this.real) {
     if (b.chest) b.chest.scale.set((ap.shoulders || 1) * (ap.build || 1), 1, ap.build || 1);
     if (b.hips) b.hips.scale.set(ap.build || 1, 1, ap.build || 1);
     if (b.upperlegl) b.upperlegl.scale.y = ap.legs || 1;
     if (b.upperlegr) b.upperlegr.scale.y = ap.legs || 1;
     if (b.upperarml) b.upperarml.scale.y = ap.arms || 1;
     if (b.upperarmr) b.upperarmr.scale.y = ap.arms || 1;
+    }
     // Ailes qui battent en vol.
     if (this.mutGroup) for (const c of this.mutGroup.children) if (c.name.startsWith('wing')) c.rotation.y = (c.name === 'wingL' ? -1 : 1) * (0.5 + (rt.vfx?.flying ? Math.sin(ctx.now * 12) * 0.5 : Math.sin(ctx.now * 2) * 0.08));
     // Bulle.
     if (rt.bubble) {
       if (this.bubbleIcon !== rt.bubble.icon) { this.bubble.material.map = bubbleTexture(rt.bubble.icon); this.bubble.material.needsUpdate = true; this.bubbleIcon = rt.bubble.icon; }
       this.bubble.visible = true;
-      this.bubble.position.y = 2.35 * this.baseScale / CHAR_SCALE + 0.2 + Math.sin(ctx.now * 3) * 0.04;
+      this.bubble.position.y = (this.lying ? 0.9 : this.heightM + 0.35) + Math.sin(ctx.now * 3) * 0.04;
     } else this.bubble.visible = false;
     // Cristal de sélection coloré selon l'humeur.
     this.gem.visible = ctx.selected === s.id;
     if (this.gem.visible) {
-      this.gem.position.y = 2.25 * this.baseScale / CHAR_SCALE + (rt.bubble ? 0.9 : 0.35);
+      this.gem.position.y = (this.lying ? 0.9 : this.heightM) + (rt.bubble ? 0.95 : 0.4);
       this.gem.rotation.y = ctx.now * 1.5;
       const mood = ctx.mood ?? 60;
       const col = new THREE.Color().setHSL(Math.max(0, mood) / 100 * 0.33, 0.9, 0.55);

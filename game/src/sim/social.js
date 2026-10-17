@@ -169,8 +169,8 @@ export class SocialSystem {
         if (t._rt.engagedBy !== s.id) { S.finish(s, a, true); return; }
         S.face(s, t.pos.x, t.pos.y);
         const cycle = Math.floor(a.t / 2) % 3;
-        rt.anim = ['talk', 'idle', 'talk'][cycle];
-        t._rt.talkAnim = ['idle', 'talk', 'idle'][cycle];
+        rt.anim = ['talk', 'listen', 'talk'][cycle];
+        t._rt.talkAnim = ['listen', 'talk', 'listen'][cycle];
         if (a.t >= a.dur) { this.resolve(s, t, so, a); a.phase = 'linger'; a.t = 0; }
         return;
       }
