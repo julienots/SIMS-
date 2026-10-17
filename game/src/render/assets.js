@@ -61,17 +61,35 @@ export function cloneCharacter(tpl) {
   return root;
 }
 
-// Analyse de l'atlas KayKit : grille de cellules 8x4 (128x256 px) ; on classe chaque cellule
-// (peau, tenue principale, accent, cheveux/cuir, métal) pour la recolorer.
-const atlasInfo = new WeakMap();
-function analyzeAtlas(img) {
-  if (atlasInfo.has(img)) return atlasInfo.get(img);
+// Analyse de l'atlas KayKit : grille de cellules 8x4 (128x256 px). On détermine, pour chaque cellule,
+// quels maillages l'utilisent (tête ou corps) via les UV, puis on la classe : peau, cheveux,
+// tenue principale / secondaire / accent, ou intacte (yeux, bouche, détails).
+const analysisCache = new Map();
+function cellUsage(model) {
+  const head = new Map(), body = new Map();
+  model.traverse(o => {
+    if (!(o.isMesh || o.isSkinnedMesh) || !o.material?.map) return;
+    if (/sword|shield|staff|wand|spellbook|knife|throwable|crossbow|axe|mug|arrow|quiver|blade/i.test(o.name || o.parent?.name || '')) return;
+    const uv = o.geometry.attributes.uv;
+    if (!uv) return;
+    const target = /head/i.test(o.name) ? head : body;
+    for (let i = 0; i < uv.count; i++) {
+      const u = uv.getX(i), v = uv.getY(i);
+      const c = Math.min(7, Math.max(0, Math.floor(u * 8))) + 8 * Math.min(3, Math.max(0, Math.floor(v * 4)));
+      target.set(c, (target.get(c) || 0) + 1);
+    }
+  });
+  return { head, body };
+}
+function analyzeAtlas(img, model, key) {
+  if (analysisCache.has(key)) return analysisCache.get(key);
   const c = document.createElement('canvas');
   c.width = img.width; c.height = img.height;
   const ctx = c.getContext('2d', { willReadFrequently: true });
   ctx.drawImage(img, 0, 0);
   const data = ctx.getImageData(0, 0, c.width, c.height);
   const cols = 8, rows = 4, cw = c.width / cols, ch = c.height / rows;
+  const usage = cellUsage(model);
   const cells = [];
   for (let r = 0; r < rows; r++) for (let q = 0; q < cols; q++) {
     let R = 0, G = 0, B = 0, n = 0;
@@ -81,30 +99,37 @@ function analyzeAtlas(img) {
     }
     const col = new THREE.Color(R / n / 255, G / n / 255, B / n / 255);
     const hsl = {}; col.getHSL(hsl);
-    let group = 'keep';
-    const hDeg = hsl.h * 360;
-    if (r === 0 && q === 0) group = 'skin';
-    else if (hsl.s < 0.12) group = hsl.l > 0.85 || hsl.l < 0.12 ? 'keep' : 'secondary';
-    else if ((hDeg > 340 || hDeg < 12) && hsl.s > 0.45) group = 'primary';
-    else if (hDeg >= 38 && hDeg < 65 && hsl.s > 0.5) group = 'accent';
-    else if (hDeg >= 12 && hDeg < 38 && hsl.l > 0.62 && hsl.s > 0.3) group = 'skin';
-    else if (hDeg >= 8 && hDeg < 45) group = 'hair';
-    else if (hDeg >= 180 && hDeg < 260) group = 'secondary';
-    else group = 'primary';
-    cells.push({ r, q, group, l: hsl.l || 0.5 });
+    const idx = q + r * 8;
+    cells.push({ r, q, idx, hsl, l: hsl.l || 0.5, head: usage.head.get(idx) || 0, body: usage.body.get(idx) || 0, group: 'keep' });
   }
+  const hueDeg = h => h * 360;
+  const skinLike = x => (x.r === 0 && x.q === 0) || (hueDeg(x.hsl.h) >= 12 && hueDeg(x.hsl.h) <= 42 && x.hsl.s >= 0.2 && x.hsl.s <= 0.8 && x.hsl.l >= 0.55 && x.hsl.l <= 0.92);
+  for (const x of cells) {
+    if (!x.head && !x.body) continue;
+    if (skinLike(x)) { x.group = 'skin'; continue; }
+    if (x.head > x.body) {
+      const hd = hueDeg(x.hsl.h);
+      if (x.hsl.l < 0.16 || x.hsl.l > 0.92) x.group = 'keep';                 // yeux, bouche, reflets
+      else if ((hd < 50 || hd > 340) && x.hsl.s > 0.15) x.group = 'hair';
+      else x.group = 'keep';
+    }
+  }
+  // Vêtements : les cellules du corps les plus utilisées deviennent principale, secondaire, accent.
+  const cloth = cells.filter(x => x.group === 'keep' && x.body > x.head && x.body > 0 && x.hsl.l > 0.1 && x.hsl.l < 0.95).sort((a, b) => b.body - a.body);
+  const order = ['primary', 'secondary', 'accent', 'accent'];
+  cloth.forEach((x, i) => { x.group = order[i] || 'keep'; });
   const info = { cells, cw, ch, w: c.width, h: c.height, data };
-  atlasInfo.set(img, info);
+  analysisCache.set(key, info);
   return info;
 }
 
 const texCache = new Map();
-export function recoloredTexture(baseTex, ap, key) {
+export function recoloredTexture(baseTex, ap, key, model) {
   const ck = `${key}|${ap.skin}|${ap.hair}|${ap.primary}|${ap.secondary}|${ap.accent}|${ap.monster ? 1 : 0}`;
   if (texCache.has(ck)) return texCache.get(ck);
   const img = baseTex.image;
   if (!img || !img.width) return baseTex;
-  const info = analyzeAtlas(img);
+  const info = analyzeAtlas(img, model, key);
   const c = document.createElement('canvas');
   c.width = info.w; c.height = info.h;
   const ctx = c.getContext('2d');
@@ -123,11 +148,10 @@ export function recoloredTexture(baseTex, ap, key) {
       const i = (y * info.w + x) * 4;
       // Conserve le dégradé (luminosité relative) de l'atlas d'origine.
       const lum = (0.299 * src[i] + 0.587 * src[i + 1] + 0.114 * src[i + 2]) / 255;
-      const k = Math.min(1.6, lum / Math.max(0.08, cell.l));
-      const mix = cell.group === 'secondary' ? 0.7 : 1;
-      dst[i] = Math.min(255, (tc.r * 255 * k) * mix + src[i] * (1 - mix));
-      dst[i + 1] = Math.min(255, (tc.g * 255 * k) * mix + src[i + 1] * (1 - mix));
-      dst[i + 2] = Math.min(255, (tc.b * 255 * k) * mix + src[i + 2] * (1 - mix));
+      const k = Math.min(1.5, lum / Math.max(0.08, cell.l));
+      dst[i] = Math.min(255, tc.r * 255 * k);
+      dst[i + 1] = Math.min(255, tc.g * 255 * k);
+      dst[i + 2] = Math.min(255, tc.b * 255 * k);
     }
   }
   ctx.putImageData(out, 0, 0);

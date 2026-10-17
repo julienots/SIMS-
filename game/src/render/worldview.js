@@ -242,7 +242,7 @@ export class WorldView {
       let col = t === 0 ? grass : TERRAIN_COLORS[t];
       const base = new THREE.Color(col);
       const n = ((x * 928371 + y * 123457) % 97) / 97;
-      if (t === 0) base.offsetHSL(0, 0, (n - 0.5) * 0.06);
+      if (t === 0) base.offsetHSL(0, 0, (n - 0.5) * 0.025);
       g.fillStyle = `#${base.getHexString()}`;
       g.fillRect(x * px, y * px, px, px);
       if (t === 1) { g.strokeStyle = 'rgba(0,0,0,0.08)'; g.strokeRect(x * px + 0.5, y * px + 0.5, px - 1, px - 1); }
@@ -299,9 +299,12 @@ export class WorldView {
 
   rebuildStructure(camYaw) {
     if (camYaw !== undefined) {
-      const q = Math.round(((camYaw % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) / (Math.PI / 2)) % 4;
+      // Direction de la caméra quantifiée sur 8 secteurs : on ne reconstruit qu'au changement de secteur.
+      const sn = Math.sin(camYaw), cs = Math.cos(camYaw);
+      const q = `${Math.abs(sn) > 0.38 ? Math.sign(sn) : 0},${Math.abs(cs) > 0.38 ? Math.sign(cs) : 0}`;
       if (q === this.camQuadrant && !this._dirty) return;
       this.camQuadrant = q;
+      this.camDir = { x: Math.abs(sn) > 0.38 ? Math.sign(sn) : 0, z: Math.abs(cs) > 0.38 ? Math.sign(cs) : 0 };
     }
     this._dirty = false;
     for (const g of this.levelGroups) { while (g.children.length) { const c = g.children.pop(); c.geometry?.dispose(); } }
@@ -394,15 +397,15 @@ export class WorldView {
     if (this.wallMode === 'up') return false;
     if (l < this.viewLevel) return false;
     const w = this.world;
-    const q = this.camQuadrant < 0 ? 0 : this.camQuadrant;
-    // Caméra au sud (q=0 : yaw ~0 => caméra vers +z), à l'est (q=1), au nord (q=2), à l'ouest (q=3).
+    const c = this.camDir || { x: 1, z: 1 };
+    // On abaisse un mur quand la caméra est de son côté et qu'une pièce se trouve derrière lui.
     if (dir === 'h') {
-      if (q === 0) return !!w.getFloor(l, x, y - 1) || this.interior(l, x, y - 1);
-      if (q === 2) return !!w.getFloor(l, x, y) || this.interior(l, x, y);
+      if (c.z > 0) return !!w.getFloor(l, x, y - 1);
+      if (c.z < 0) return !!w.getFloor(l, x, y);
       return false;
     }
-    if (q === 1) return !!w.getFloor(l, x - 1, y) || this.interior(l, x - 1, y);
-    if (q === 3) return !!w.getFloor(l, x, y) || this.interior(l, x, y);
+    if (c.x > 0) return !!w.getFloor(l, x - 1, y);
+    if (c.x < 0) return !!w.getFloor(l, x, y);
     return false;
   }
   interior(l, x, y) { return !!this.world.getFloor(l, x, y); }

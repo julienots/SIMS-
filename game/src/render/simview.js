@@ -87,11 +87,13 @@ export class SimView {
       if (WEAPONS.test(n)) o.visible = false;
       else if (HATS.test(n)) o.visible = !!ap.hat;
       else if (CAPES.test(n)) o.visible = !!ap.cape;
-      if (o.material?.map) {
-        o.material = o.material.clone();
-        o.material.map = recoloredTexture(o.material.map, ap, ap.body);
-        if (monster) o.material.emissive = new THREE.Color('#123b10');
-      }
+    });
+    // Recoloration (après la visibilité, pour n'analyser que les maillages affichés).
+    model.traverse(o => {
+      if ((!o.isMesh && !o.isSkinnedMesh) || !o.material?.map) return;
+      o.material = o.material.clone();
+      o.material.map = recoloredTexture(o.material.map, ap, ap.body, tpl.scene);
+      if (monster) o.material.emissive = new THREE.Color('#123b10');
     });
     this.bones = {};
     model.traverse(o => { if (o.isBone) this.bones[o.name] = o; });
@@ -107,6 +109,7 @@ export class SimView {
     this.clips = tpl.animations;
     this.actions = {};
     this.cur = null;
+    this.curKey = null;
     this.attachExtras(ap);
     this.attachMutations();
     this.ready = true;
@@ -149,15 +152,15 @@ export class SimView {
     const ex = new THREE.Group();
     this.extras = ex;
     head.add(ex);
-    // Repère approximatif : centre du visage à ~0,55 au-dessus de l'os de la tête, face vers +z.
-    const fy = 0.55, fz = 0.48;
+    // Repère du visage (espace de l'os de la tête) : yeux à ~0,42, bouche à ~0,2, face vers +z.
+    const fy = 0.55, fz = 0.5, eyeY = 0.42, mouthY = 0.24;
     const hair = new THREE.Color(ap.hair || '#4a2e1c');
     for (const id of ap.extras || []) {
       switch (id) {
         case 'glasses': case 'sunglasses': {
           const m = mat(id === 'sunglasses' ? '#111' : '#222', { rough: 0.3 });
-          for (const x of [-0.17, 0.17]) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.018, 6, 16), m); r.position.set(x, fy, fz); ex.add(r); if (id === 'sunglasses') { const l = new THREE.Mesh(new THREE.CircleGeometry(0.1, 16), mat('#1a1a2e', { opacity: 0.85 })); l.position.set(x, fy, fz + 0.005); ex.add(l); } }
-          const b = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.02, 0.02), m); b.position.set(0, fy, fz); ex.add(b);
+          for (const x of [-0.17, 0.17]) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.018, 6, 16), m); r.position.set(x, eyeY, fz + 0.04); ex.add(r); if (id === 'sunglasses') { const l = new THREE.Mesh(new THREE.CircleGeometry(0.11, 16), mat('#1a1a2e', { opacity: 0.85 })); l.position.set(x, eyeY, fz + 0.045); ex.add(l); } }
+          const b = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.02), m); b.position.set(0, eyeY, fz + 0.04); ex.add(b);
           break;
         }
         case 'headphones': {
@@ -182,12 +185,12 @@ export class SimView {
         }
         case 'flower': { const f = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), mat('#ff6b81')); f.position.set(0.35, fy + 0.35, 0.2); ex.add(f); break; }
         case 'bow': { for (const x of [-0.09, 0.09]) { const b = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.16, 4), mat('#ff4d94')); b.rotation.z = x > 0 ? -Math.PI / 2 : Math.PI / 2; b.position.set(x, fy + 0.5, -0.1); ex.add(b); } break; }
-        case 'mustache': { const m = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.025, 6, 12, Math.PI), mat(`#${hair.getHexString()}`)); m.rotation.z = Math.PI; m.position.set(0, fy - 0.17, fz + 0.01); ex.add(m); break; }
-        case 'beard': { const b = new THREE.Mesh(new THREE.SphereGeometry(0.26, 14, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat(`#${hair.getHexString()}`)); b.position.set(0, fy - 0.1, fz - 0.12); b.scale.set(1, 1.2, 0.6); ex.add(b); break; }
-        case 'earrings': { for (const x of [-0.45, 0.45]) { const e = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), mat('#f1c40f', { metal: 0.9 })); e.position.set(x, fy - 0.12, 0.05); ex.add(e); } break; }
-        case 'scar': { const s = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.2, 0.01), mat('#a33')); s.rotation.z = 0.4; s.position.set(0.2, fy + 0.1, fz + 0.01); ex.add(s); break; }
-        case 'freckles': { for (let i = 0; i < 6; i++) { const d = new THREE.Mesh(new THREE.CircleGeometry(0.012, 6), mat('#a0522d')); d.position.set((i % 3 - 1) * 0.04 + (i < 3 ? -0.18 : 0.18), fy - 0.06 + (i % 2) * 0.02, fz + 0.012); ex.add(d); } break; }
-        case 'makeup': { for (const x of [-0.2, 0.2]) { const c = new THREE.Mesh(new THREE.CircleGeometry(0.06, 12), mat('#ff8fab', { opacity: 0.6 })); c.position.set(x, fy - 0.1, fz + 0.012); ex.add(c); } break; }
+        case 'mustache': { const m = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.025, 6, 12, Math.PI), mat(`#${hair.getHexString()}`)); m.rotation.z = Math.PI; m.position.set(0, mouthY + 0.01, fz + 0.03); ex.add(m); break; }
+        case 'beard': { const b = new THREE.Mesh(new THREE.SphereGeometry(0.26, 14, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat(`#${hair.getHexString()}`)); b.position.set(0, mouthY + 0.05, fz - 0.15); b.scale.set(1, 1.1, 0.7); ex.add(b); break; }
+        case 'earrings': { for (const x of [-0.45, 0.45]) { const e = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), mat('#f1c40f', { metal: 0.9 })); e.position.set(x, mouthY + 0.05, 0.05); ex.add(e); } break; }
+        case 'scar': { const s = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.2, 0.01), mat('#a33')); s.rotation.z = 0.4; s.position.set(0.2, eyeY + 0.08, fz + 0.02); ex.add(s); break; }
+        case 'freckles': { for (let i = 0; i < 6; i++) { const d = new THREE.Mesh(new THREE.CircleGeometry(0.012, 6), mat('#a0522d')); d.position.set((i % 3 - 1) * 0.04 + (i < 3 ? -0.18 : 0.18), eyeY - 0.12 + (i % 2) * 0.02, fz + 0.02); ex.add(d); } break; }
+        case 'makeup': { for (const x of [-0.2, 0.2]) { const c = new THREE.Mesh(new THREE.CircleGeometry(0.06, 12), mat('#ff8fab', { opacity: 0.6 })); c.position.set(x, eyeY - 0.13, fz + 0.02); ex.add(c); } break; }
         case 'necklace': { const n = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.02, 6, 20), mat('#f5f5f5', { metal: 0.5 })); n.rotation.x = Math.PI / 2; n.position.set(0, -0.05, 0.05); ex.add(n); break; }
         default: {
           // Accessoire ajouté par un mod : forme générique colorée.
