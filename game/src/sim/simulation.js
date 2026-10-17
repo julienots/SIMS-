@@ -162,6 +162,7 @@ export class Simulation extends Emitter {
     this.updateMoodlets(s);
     if (rt.once) { rt.onceT -= dt; if (rt.onceT <= 0) rt.once = null; }
     if (rt.bubble && rt.bubble.until < this.world.time) rt.bubble = null;
+    if (rt.engagedBy && this.controlled === s.id) rt.engagedBy = null;   // le joueur garde la main
     if (rt.engagedBy) {
       // Le sim est pris dans une conversation initiée par un autre.
       const other = this.world.sim(rt.engagedBy);
@@ -176,7 +177,7 @@ export class Simulation extends Emitter {
       rt.anim = rt.hidden ? 'idle' : 'idle';
       rt.evalCd -= dt;
       if (rt.evalCd <= 0 && this.autonomyAllowed(s)) {
-        rt.evalCd = 1.2 + Math.random();
+        rt.evalCd = 1.8 + Math.random() * 1.4;
         const choice = this.chooseAutonomous(s);
         if (choice) this.enqueue(s, choice, false);
       }
@@ -975,9 +976,11 @@ export class Simulation extends Emitter {
     const lotHere = w.lotAt(Math.floor(s.pos.x), Math.floor(s.pos.y));
     const home = w.homeLot(s);
     const funds = w.funds(s);
-    for (const o of w.objects) {
+    // Liste des objets interactifs mise en cache (reconstruite quand les objets changent).
+    if (this._affCacheV !== w.navVersion) { this._affCacheV = w.navVersion; this._affObjs = w.objects.filter(o => registry.object(o.def)?.aff?.length); }
+    for (const o of this._affObjs) {
       const def = registry.object(o.def);
-      if (!def || !def.aff?.length) continue;
+      if (!def || !w.objectsById.has(o.id)) continue;
       const oc = w.objCenter(o);
       const d = dist(s.pos.x, s.pos.y, oc.x, oc.y) + Math.abs((o.level || 0) - s.pos.l) * 6;
       const oLot = w.lotAt(o.x, o.y);
@@ -996,7 +999,7 @@ export class Simulation extends Emitter {
         score /= 1 + d / 18;
         if (oLot && oLot.type === 'community' && lotHere !== oLot) score *= 0.85;
         if (affId === 'eat_meal') { opts.push({ score: score * 1.6 + 2, action: { kind: 'eat', objId: o.id, name: 'Manger', icon: '🍽️' } }); continue; }
-        opts.push({ score, action: { kind: 'object', objId: o.id, aff: affId, name: aff.name, icon: def.icon || '•' } });
+        opts.push({ score, action: { kind: 'object', objId: o.id, aff: affId, name: aff.name } });
       }
     }
     // Interactions sociales.
@@ -1064,7 +1067,7 @@ export class Simulation extends Emitter {
       if (aff.cost && this.world.funds(s) < aff.cost) disabled = 'Pas assez d’argent';
       if (aff.special === 'baby' && !this.life.babyNeedsCare(o)) disabled = 'Aucun bébé ici';
       if (affId === 'eat_meal') { items.push({ label: 'Prendre une assiette', icon: '🍽️', action: { kind: 'eat', objId: o.id, name: 'Manger', icon: '🍽️' } }); continue; }
-      items.push({ label: aff.name + (aff.cost ? ` (✦${aff.cost})` : ''), icon: aff.icon || '•', disabled, action: { kind: 'object', objId: o.id, aff: affId, name: aff.name } });
+      items.push({ label: aff.name + (aff.cost ? ` (✦${aff.cost})` : ''), icon: aff.icon, affId, disabled, action: { kind: 'object', objId: o.id, aff: affId, name: aff.name } });
     }
     items.push(...this.powers.objectMenu(s, o));
     return items;

@@ -64,3 +64,15 @@ test('sauvegarde et rechargement conservent tout', () => {
   run(sim2, 120);
   assert.ok(w2.time > w.time);
 });
+
+test('performances : 40 habitants sur une grande carte', () => {
+  const w = generateWorld({ name: 'Grand', settings: { mapSize: 160, population: 40, environment: 'modern' }, seed: 99 });
+  const sim = new Simulation(w);
+  const t0 = performance.now();
+  run(sim, 6 * 60);
+  const ms = performance.now() - t0;
+  const perHour = ms / 6;
+  console.log(`${w.sims.length} habitants, ${w.objects.length} objets : ${perHour.toFixed(0)} ms de calcul par heure de jeu (${(perHour / 60).toFixed(2)} ms par seconde réelle à vitesse ×1)`);
+  assert.ok(w.sims.length >= 35);
+  assert.ok(perHour / 60 < 8, 'la simulation doit rester sous 8 ms par seconde réelle');
+});

@@ -9,6 +9,7 @@ import { ALIGNMENTS, PASSIVE_EFFECTS } from '../sim/powers.js';
 import { simName, isAdult } from '../sim/simulation.js';
 import { SKILL_MAX } from '../sim/data/core-data.js';
 import { sfx } from '../engine/audio.js';
+import { affIcon } from './icons.js';
 
 const WALL_MODES = [['up', '🧱', 'Murs hauts'], ['cutaway', '🪟', 'Murs découpés'], ['down', '⬛', 'Murs bas']];
 const CAM_CYCLE = ['free', 'follow', 'close', 'neighborhood', 'aerial'];
@@ -62,7 +63,9 @@ export class Hud {
     // Foyer.
     this.bottomLeft.innerHTML = '';
     if (g.controlledSim) { this.buildDirectControls(); }
-    else this.root.querySelectorAll('.direct-pad,.direct-actions,.interact-hint').forEach(e => e.remove());
+    else { this.root.querySelectorAll('.direct-pad,.direct-actions,.interact-hint').forEach(e => e.remove()); this.hint = null; }
+    // En contrôle direct, le joystick tactile remplace le panneau du foyer.
+    if (g.controlledSim && this.isTouch()) { this.bottomLeft.classList.add('hidden'); }
     const hh = this.W.household(g.household);
     const row = h('div', { class: 'household' });
     for (const m of g.householdSims()) {
@@ -133,7 +136,7 @@ export class Hud {
     if (!s) return;
     const q = h('div', { class: 'queue' });
     s.queue.forEach((a, i) => {
-      const icon = a.icon || (a.aff ? registry.aff(a.aff)?.icon : null) || (a.social ? registry.social(a.social)?.icon : null) || actionIcon(a);
+      const icon = (a.icon && a.icon !== '•' ? a.icon : null) || (a.aff ? affIcon(a.aff, registry.aff(a.aff)) : null) || (a.social ? registry.social(a.social)?.icon : null) || actionIcon(a);
       q.appendChild(h('div', { class: `queue-item ${i === 0 ? 'current' : ''}`, tabindex: '0', title: a.name || a.kind, onclick: () => { this.S.cancel(s, a.id); sfx('close'); } },
         icon, a.player ? h('span', { class: 'x' }, '✕') : null, i === 0 ? h('span', { class: 'lbl' }, (a.name || a.kind).slice(0, 18)) : null));
     });
@@ -301,7 +304,7 @@ export class Hud {
     const catNames = { friendly: 'Amical', funny: 'Drôle', romantic: 'Romantique', mean: 'Méchant', deep: 'Profond', power: 'Pouvoirs', info: 'Infos', move: 'Déplacement', self: 'Soi-même', world: 'Monde' };
     for (const it of items) {
       if (it.cat && it.cat !== lastCat && catNames[it.cat]) { pie.appendChild(h('div', { class: 'cat' }, catNames[it.cat])); lastCat = it.cat; }
-      pie.appendChild(btn(`${it.icon || '•'} ${it.label}`, () => {
+      pie.appendChild(btn(`${it.icon || (it.affId ? affIcon(it.affId) : '•')} ${it.label}`, () => {
         this.closePie();
         if (it.special) { it.special(); return; }
         if (!me) return;
@@ -461,8 +464,15 @@ export class Hud {
   }
 
   // ------------------------------------------------------------------ contrôle direct (tactile)
+  isTouch() { return matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window; }
+
   buildDirectControls() {
-    if (this.root.querySelector('.direct-pad')) return;
+    if (this.root.querySelector('.direct-actions')) return;
+    if (!this.isTouch()) {
+      this.hint = h('div', { class: 'panel interact-hint hidden' });
+      this.root.append(this.hint, h('div', { class: 'direct-actions' }, btn('✋ Interagir (E)', () => this.game.directInteract(), 'primary'), btn('⚡ Actions', () => this.openSelfMenu()), btn('✕ Quitter (Échap)', () => this.game.toggleDirectControl(false), 'ghost')));
+      return;
+    }
     const knob = h('div', { class: 'knob' });
     const pad = h('div', { class: 'direct-pad' }, knob);
     this.touchStick = { x: 0, y: 0 };

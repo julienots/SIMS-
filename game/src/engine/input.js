@@ -92,7 +92,7 @@ export class Input extends Emitter {
       const pads = navigator.getGamepads ? navigator.getGamepads() : [];
       for (const g of pads) if (g && g.connected) { gp = g; break; }
     } catch { /* API absente */ }
-    let axes = [0, 0, 0, 0], btn = new Array(17).fill(false), lt = 0, rt = 0, name = '';
+    let axes = [0, 0, 0, 0], btn = new Array(17).fill(false), lt = 0, rt = 0, name = '', downs = null;
     if (gp) {
       name = gp.id;
       axes = [gp.axes[0] || 0, gp.axes[1] || 0, gp.axes[2] || 0, gp.axes[3] || 0];
@@ -109,19 +109,22 @@ export class Input extends Emitter {
           while (btn.length < 17) btn.push(false);
           lt = st.lt; rt = st.rt;
           btn[6] = lt > 0.5; btn[7] = rt > 0.5;
+          downs = st.downs || null;
         }
       } catch { /* état illisible */ }
     }
+    const latched = downs;
     const dz = v => (Math.abs(v) < DEAD ? 0 : (v - Math.sign(v) * DEAD) / (1 - DEAD));
     p.connected = !!name;
     p.name = name;
     p.lx = dz(axes[0]); p.ly = dz(axes[1]); p.rx = dz(axes[2]); p.ry = dz(axes[3]);
     p.lt = lt; p.rt = rt;
     for (let i = 0; i < 17; i++) {
-      p.pressed[i] = btn[i] && !this.prevButtons[i];
+      p.pressed[i] = (btn[i] && !this.prevButtons[i]) || (downs && this.prevDowns && downs[i] !== this.prevDowns[i]);
       p.buttons[i] = btn[i];
       this.prevButtons[i] = btn[i];
     }
+    if (latched) this.prevDowns = latched.slice();
     const now = performance.now();
     if (p.pressed.some(Boolean) || Math.abs(p.lx) + Math.abs(p.ly) + Math.abs(p.rx) + Math.abs(p.ry) > 0.1) this.lastPadUse = now;
     // Répétition des directions pour la navigation dans les menus.

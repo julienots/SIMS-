@@ -389,6 +389,21 @@ export class WorldView {
       }
     }
     this.buildRoofs();
+    this.updateWallObjects();
+  }
+
+  // Les objets muraux (tableaux, placards) disparaissent quand leur mur est abaissé.
+  updateWallObjects() {
+    for (const o of this.world.objects) {
+      const def = registry.object(o.def);
+      if (!def?.wall) continue;
+      const v = this.objViews.get(o.id);
+      if (!v) continue;
+      const r = o.rot & 3, x = o.x, y = o.y;
+      const [dir, ex, ey] = [['h', x, y], ['v', x + 1, y], ['h', x, y + 1], ['v', x, y]][r];
+      const l = o.level || 0;
+      v.visible = l <= this.viewLevel && !(this.world.getWall(l, dir, ex, ey) && this.isLowered(l, dir, ex, ey));
+    }
   }
 
   // Mode découpé : on abaisse les murs entre la caméra et l'intérieur des pièces.
@@ -494,6 +509,7 @@ export class WorldView {
     v.position.set(c.x, (o.level || 0) * LEVEL_HEIGHT, c.y);
     v.rotation.y = -(o.rot & 3) * Math.PI / 2;
     v.visible = (o.level || 0) <= this.viewLevel;
+    if (registry.object(o.def)?.wall) this.updateWallObjects();
   }
 
   removeObjectView(id) {

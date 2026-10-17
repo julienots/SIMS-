@@ -65,7 +65,7 @@ export class SocialSystem {
       if (t.id === s.id || t._rt.hidden || t.stage === 'baby') continue;
       const d = dist(s.pos.x, s.pos.y, t.pos.x, t.pos.y);
       if (d > 26 || t.pos.l !== s.pos.l && d > 6) continue;
-      if (t._rt.engagedBy || t._rt.sleeping || t.queue[0]?.kind === 'work') continue;
+      if (t._rt.engagedBy || t._rt.sleeping || t.queue[0]?.kind === 'work' || this.S.controlled === t.id) continue;
       const so = this.pickSocial(s, t, traits, emo);
       if (!so) continue;
       let score = (2.2 * urg + 0.3) / (1 + d / 10);
@@ -133,8 +133,9 @@ export class SocialSystem {
         if ((d < 1.7 && s.pos.l === t.pos.l) || remote) { a.phase = 'engage'; rt.path = null; return; }
         if (t._rt.hidden) { S.finish(s, a, true); return; }
         // Recalcule le chemin si la cible s'est déplacée.
-        const sig = `${Math.floor(t.pos.x)},${Math.floor(t.pos.y)},${t.pos.l}`;
-        if (sig !== a._sig) { a._sig = sig; a._goalSig = null; rt.path = null; }
+        // On ne recalcule le chemin que si la cible s'est éloignée du point visé.
+        const tgt = a._tgt;
+        if (!tgt || Math.hypot(t.pos.x - tgt.x, t.pos.y - tgt.y) > 2.5 || t.pos.l !== tgt.l) { a._tgt = { x: t.pos.x, y: t.pos.y, l: t.pos.l }; a._sig = `${a._tgt.x},${a._tgt.y}`; a._goalSig = null; rt.path = null; }
         const goals = [];
         for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
           const gx = Math.floor(t.pos.x) + dx, gy = Math.floor(t.pos.y) + dy;
@@ -148,6 +149,7 @@ export class SocialSystem {
         return;
       }
       case 'engage': {
+        if (S.controlled === t.id && !a.player) { S.finish(s, a, true); return; }
         if (t._rt.engagedBy && t._rt.engagedBy !== s.id) { S.bubble(s, '⏳', 5); if (a.player) S.notifyFail(s, `${t.first} est déjà occupé.`); S.finish(s, a, true); return; }
         if (t._rt.sleeping) { S.bubble(s, '💤', 5); if (a.player) S.notifyFail(s, `${t.first} dort.`); S.finish(s, a, true); return; }
         if (t.queue[0]?.kind === 'social' && t.queue[0].target === s.id && t._rt.socialWith === s.id) {
