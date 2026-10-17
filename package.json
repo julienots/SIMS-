@@ -1,0 +1,25 @@
+{
+  "name": "mylife-universe",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MYLIFE UNIVERSE - simulation de vie par SUPERESSENCE STUDIO",
+  "scripts": {
+    "assets": "node tools/process-assets.mjs",
+    "build": "node tools/build-web.mjs",
+    "serve": "npx http-server dist/web -p 8080 -c-1",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests-browser/run.mjs",
+    "apk": "bash tools/build-apk.sh"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "^4.1.1",
+    "@gltf-transform/extensions": "^4.1.1",
+    "@gltf-transform/functions": "^4.1.1",
+    "esbuild": "^0.24.0"
+  },
+  "type": "module"
+}
