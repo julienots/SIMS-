@@ -334,6 +334,20 @@ export class EventSystem {
         case 'use_power': if (who) S.powers.autoUse(who, e.id, target); break;
         case 'alignment': if (who) S.powers.setAlignment(who, e.value); break;
         case 'spawn_object': if (actor) { const f = S.nav.nearestFree(0, actor.pos.x + 2, actor.pos.y, 6); if (f && registry.object(e.id)) w.addObject(e.id, f.x, f.y, 0, 0, { state: { temporary: e.duration ? w.time + e.duration : 0 } }); } break;
+        case 'grant_random_power': {
+          if (!who) break;
+          const pool = [...registry.powers.values()].filter(p => !this.S.powers.hasPower(who, p.id) && (!e.family || p.family === e.family));
+          if (pool.length) S.powers.grant(who, w.rng.pick(pool).id, true);
+          break;
+        }
+        case 'duel': {
+          if (!actor) break;
+          const foe = target && S.powers.hasAnyPower(target) ? target : w.rng.pick(this.activeSims().filter(o => o.id !== actor.id && S.powers.hasAnyPower(o)));
+          if (foe && S.powers.hasAnyPower(actor)) S.enqueue(actor, { kind: 'power', power: '__duel', target: foe.id, name: 'Duel', icon: '⚡' }, false);
+          break;
+        }
+        case 'spawn_villain': S.powers.spawnVillain(e); break;
+        case 'form_team': if (actor) S.powers.formTeam(actor); break;
         default: break;
       }
     }

@@ -1,0 +1,123 @@
+{
+ "format": 1,
+ "id": "example.emotions-plus",
+ "name": "Émotions plus",
+ "version": "1.0.0",
+ "author": "SUPERESSENCE STUDIO (exemple)",
+ "icon": "🎭",
+ "description": "Exemple de mod : de nouvelles humeurs, un trait « Dramatique » et des événements du quotidien.",
+ "dependencies": [],
+ "content": {
+  "traits": [
+   {
+    "id": "dramatic",
+    "name": "Dramatique",
+    "icon": "🎭",
+    "desc": "Tout est une tragédie… ou un triomphe.",
+    "randomness": 1.6,
+    "emotionBias": {
+     "sad": 1.5,
+     "happy": 1.3,
+     "angry": 1.3
+    }
+   }
+  ],
+  "moodlets": [
+   {
+    "id": "nostalgic",
+    "name": "Nostalgique",
+    "emotion": "sad",
+    "weight": 1,
+    "dur": 180
+   },
+   {
+    "id": "sunny_mood",
+    "name": "Bonne humeur contagieuse",
+    "emotion": "happy",
+    "weight": 2,
+    "dur": 180
+   },
+   {
+    "id": "existential",
+    "name": "Crise existentielle",
+    "emotion": "tense",
+    "weight": 2,
+    "dur": 240
+   }
+  ],
+  "events": [
+   {
+    "id": "nostalgia",
+    "name": "Nostalgie",
+    "icon": "📷",
+    "trigger": {
+     "type": "hourly",
+     "chance": 0.04
+    },
+    "effects": [
+     {
+      "type": "moodlet",
+      "id": "nostalgic"
+     },
+     {
+      "type": "bubble",
+      "icon": "📷"
+     },
+     {
+      "type": "journal",
+      "text": "📷 {actor} repense avec nostalgie à son enfance."
+     }
+    ]
+   },
+   {
+    "id": "contagious_joy",
+    "name": "Bonne humeur contagieuse",
+    "icon": "😁",
+    "trigger": {
+     "type": "social",
+     "chance": 0.25,
+     "social": "joke",
+     "onlyIfAccepted": true
+    },
+    "effects": [
+     {
+      "type": "moodlet",
+      "id": "sunny_mood"
+     },
+     {
+      "type": "moodlet",
+      "on": "target",
+      "id": "sunny_mood"
+     }
+    ]
+   },
+   {
+    "id": "drama_queen",
+    "name": "Crise dramatique",
+    "icon": "😩",
+    "trigger": {
+     "type": "hourly",
+     "chance": 0.06
+    },
+    "conditions": {
+     "trait": "dramatic"
+    },
+    "effects": [
+     {
+      "type": "moodlet",
+      "id": "existential"
+     },
+     {
+      "type": "animation",
+      "anim": "sad",
+      "duration": 4
+     },
+     {
+      "type": "journal",
+      "text": "😩 {actor} traverse une crise existentielle très théâtrale."
+     }
+    ]
+   }
+  ]
+ }
+}

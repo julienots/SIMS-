@@ -1,0 +1,894 @@
+{
+ "format": 1,
+ "id": "superessence.superpowers",
+ "name": "SUPERESSENCE MOD — SUPERPOWERS",
+ "version": "1.0.0",
+ "author": "SUPERESSENCE STUDIO",
+ "icon": "⚡",
+ "gameVersion": ">=1.0.0",
+ "official": true,
+ "description": "Super-pouvoirs, mutations, héros, anti-héros et super-vilains. 35 pouvoirs répartis en 7 familles, entraînement, duels, sauvetages, identités secrètes et règles de monde configurables.",
+ "dependencies": [],
+ "content": {
+  "powers": [
+   {
+    "id": "sp_energy_ball",
+    "name": "Boule d’énergie",
+    "family": "Énergie",
+    "icon": "🔵",
+    "effect": "projectile",
+    "color": "#7fd4ff",
+    "intensity": 1,
+    "range": 12,
+    "cost": 12,
+    "cooldown": 8,
+    "instability": 0.03,
+    "desc": "Projette une sphère d’énergie pure."
+   },
+   {
+    "id": "sp_light_ray",
+    "name": "Rayon lumineux",
+    "family": "Énergie",
+    "icon": "🔆",
+    "effect": "beam",
+    "color": "#fff59d",
+    "intensity": 1.2,
+    "range": 14,
+    "cost": 18,
+    "cooldown": 12,
+    "instability": 0.04,
+    "desc": "Un rayon de lumière concentrée."
+   },
+   {
+    "id": "sp_energy_shield",
+    "name": "Bouclier énergétique",
+    "family": "Énergie",
+    "icon": "🛡️",
+    "effect": "shield",
+    "color": "#6fd3ff",
+    "duration": 40,
+    "cost": 15,
+    "cooldown": 30,
+    "desc": "Une bulle qui bloque les attaques."
+   },
+   {
+    "id": "sp_energy_pulse",
+    "name": "Impulsion",
+    "family": "Énergie",
+    "icon": "💫",
+    "effect": "pulse",
+    "color": "#b3e5fc",
+    "range": 4,
+    "intensity": 1,
+    "cost": 20,
+    "cooldown": 20,
+    "instability": 0.05,
+    "desc": "Repousse tout ce qui est proche."
+   },
+   {
+    "id": "sp_energy_absorb",
+    "name": "Absorption d’énergie",
+    "family": "Énergie",
+    "icon": "🌀",
+    "effect": "absorb",
+    "color": "#80deea",
+    "cost": 0,
+    "cooldown": 60,
+    "desc": "Récupère de l’énergie fictive dans l’environnement."
+   },
+   {
+    "id": "sp_fire",
+    "name": "Contrôle du feu",
+    "family": "Éléments",
+    "icon": "🔥",
+    "effect": "projectile",
+    "element": "fire",
+    "color": "#ff5722",
+    "intensity": 1.3,
+    "range": 10,
+    "cost": 15,
+    "cooldown": 10,
+    "instability": 0.08,
+    "desc": "Des flammes jaillissent des mains. Peut noircir les objets."
+   },
+   {
+    "id": "sp_ice",
+    "name": "Contrôle de la glace",
+    "family": "Éléments",
+    "icon": "❄️",
+    "effect": "projectile",
+    "element": "ice",
+    "color": "#81d4fa",
+    "intensity": 1,
+    "range": 10,
+    "cost": 14,
+    "cooldown": 10,
+    "instability": 0.04,
+    "desc": "Gèle les objets et ralentit la cible."
+   },
+   {
+    "id": "sp_electric",
+    "name": "Électricité",
+    "family": "Éléments",
+    "icon": "⚡",
+    "effect": "beam",
+    "element": "electric",
+    "color": "#ffee58",
+    "intensity": 1.2,
+    "range": 11,
+    "cost": 16,
+    "cooldown": 12,
+    "instability": 0.07,
+    "desc": "Un arc électrique… attention aux appareils !"
+   },
+   {
+    "id": "sp_water",
+    "name": "Manipulation de l’eau",
+    "family": "Éléments",
+    "icon": "💧",
+    "effect": "projectile",
+    "element": "water",
+    "color": "#4fc3f7",
+    "intensity": 0.8,
+    "range": 10,
+    "cost": 10,
+    "cooldown": 8,
+    "instability": 0.02,
+    "desc": "Un jet d’eau puissant."
+   },
+   {
+    "id": "sp_earth",
+    "name": "Manipulation de la terre",
+    "family": "Éléments",
+    "icon": "🪨",
+    "effect": "pulse",
+    "element": "earth",
+    "color": "#a1887f",
+    "range": 5,
+    "intensity": 1.2,
+    "cost": 20,
+    "cooldown": 25,
+    "instability": 0.05,
+    "desc": "Le sol tremble et repousse les alentours."
+   },
+   {
+    "id": "sp_wind",
+    "name": "Contrôle du vent",
+    "family": "Éléments",
+    "icon": "🌪️",
+    "effect": "pulse",
+    "element": "wind",
+    "color": "#e0f7fa",
+    "range": 6,
+    "intensity": 0.8,
+    "cost": 14,
+    "cooldown": 15,
+    "instability": 0.03,
+    "desc": "Une bourrasque soudaine."
+   },
+   {
+    "id": "sp_strength",
+    "name": "Superforce",
+    "family": "Physiques",
+    "icon": "💪",
+    "effect": "strength",
+    "color": "#ffb74d",
+    "cost": 10,
+    "cooldown": 5,
+    "desc": "Soulève et déplace n’importe quel objet, même une voiture."
+   },
+   {
+    "id": "sp_speed",
+    "name": "Supervitesse",
+    "family": "Physiques",
+    "icon": "⚡",
+    "effect": "speed",
+    "color": "#fff176",
+    "duration": 60,
+    "cost": 15,
+    "cooldown": 40,
+    "desc": "Se déplace trois fois plus vite."
+   },
+   {
+    "id": "sp_jump",
+    "name": "Sauts extraordinaires",
+    "family": "Physiques",
+    "icon": "🦘",
+    "effect": "superjump",
+    "color": "#d9c7a3",
+    "range": 25,
+    "intensity": 1,
+    "cost": 10,
+    "cooldown": 6,
+    "desc": "Bondit par-dessus les maisons."
+   },
+   {
+    "id": "sp_tough",
+    "name": "Résistance améliorée",
+    "family": "Physiques",
+    "icon": "🧱",
+    "effect": "resist",
+    "color": "#90a4ae",
+    "cost": 0,
+    "cooldown": 0,
+    "desc": "Encaisse les coups et ne connaît pas la peur. (passif)"
+   },
+   {
+    "id": "sp_regen",
+    "name": "Régénération",
+    "family": "Physiques",
+    "icon": "💚",
+    "effect": "regen",
+    "color": "#69f0ae",
+    "cost": 0,
+    "cooldown": 0,
+    "desc": "Récupère son énergie deux fois plus vite. (passif)"
+   },
+   {
+    "id": "sp_flight",
+    "name": "Vol",
+    "family": "Mobilité",
+    "icon": "🕊️",
+    "effect": "flight",
+    "color": "#ffffff",
+    "cost": 8,
+    "cooldown": 3,
+    "desc": "S’envole et traverse la ville par les airs."
+   },
+   {
+    "id": "sp_teleport",
+    "name": "Téléportation",
+    "family": "Mobilité",
+    "icon": "✨",
+    "effect": "teleport",
+    "color": "#ce93d8",
+    "range": 60,
+    "cost": 18,
+    "cooldown": 15,
+    "instability": 0.05,
+    "desc": "Disparaît et réapparaît ailleurs."
+   },
+   {
+    "id": "sp_levitation",
+    "name": "Lévitation",
+    "family": "Mobilité",
+    "icon": "🎈",
+    "effect": "levitate",
+    "color": "#b39ddb",
+    "duration": 60,
+    "cost": 6,
+    "cooldown": 10,
+    "desc": "Flotte paisiblement au-dessus du sol."
+   },
+   {
+    "id": "sp_climb",
+    "name": "Escalade surnaturelle",
+    "family": "Mobilité",
+    "icon": "🦎",
+    "effect": "climb",
+    "color": "#8bc34a",
+    "cost": 0,
+    "cooldown": 0,
+    "desc": "Passe par-dessus les murs. (passif)"
+   },
+   {
+    "id": "sp_telekinesis",
+    "name": "Télékinésie",
+    "family": "Psychiques",
+    "icon": "🌀",
+    "effect": "telekinesis",
+    "color": "#ba68c8",
+    "range": 14,
+    "cost": 12,
+    "cooldown": 8,
+    "instability": 0.04,
+    "desc": "Déplace les objets et fait léviter les gens par la pensée."
+   },
+   {
+    "id": "sp_perception",
+    "name": "Perception augmentée",
+    "family": "Psychiques",
+    "icon": "👁️",
+    "effect": "perception",
+    "color": "#4dd0e1",
+    "range": 14,
+    "cost": 10,
+    "cooldown": 30,
+    "desc": "Perçoit les secrets des personnes proches."
+   },
+   {
+    "id": "sp_illusion",
+    "name": "Illusions",
+    "family": "Psychiques",
+    "icon": "🎭",
+    "effect": "illusion",
+    "color": "#b04cff",
+    "duration": 20,
+    "range": 15,
+    "cost": 14,
+    "cooldown": 25,
+    "instability": 0.03,
+    "desc": "Fait apparaître des visions : monstre, dragon ou gâteau géant."
+   },
+   {
+    "id": "sp_telepathy",
+    "name": "Communication mentale",
+    "family": "Psychiques",
+    "icon": "🧠",
+    "effect": "telepathy",
+    "color": "#f48fb1",
+    "cost": 0,
+    "cooldown": 0,
+    "desc": "Converse à distance, sans se déplacer. (passif)"
+   },
+   {
+    "id": "sp_arms",
+    "name": "Bras supplémentaires",
+    "family": "Mutations",
+    "icon": "🦾",
+    "effect": "mutation",
+    "mutation": "arms",
+    "color": "#ffcc80",
+    "cost": 10,
+    "cooldown": 10,
+    "desc": "Deux bras de plus, bien pratiques."
+   },
+   {
+    "id": "sp_claws",
+    "name": "Griffes",
+    "family": "Mutations",
+    "icon": "🐾",
+    "effect": "mutation",
+    "mutation": "claws",
+    "color": "#eeeeee",
+    "cost": 5,
+    "cooldown": 5,
+    "desc": "Des griffes rétractables."
+   },
+   {
+    "id": "sp_wings",
+    "name": "Ailes",
+    "family": "Mutations",
+    "icon": "🪽",
+    "effect": "mutation",
+    "mutation": "wings",
+    "color": "#f5f0ff",
+    "cost": 8,
+    "cooldown": 5,
+    "desc": "De grandes ailes déployables (combinez avec le Vol)."
+   },
+   {
+    "id": "sp_tentacles",
+    "name": "Tentacules",
+    "family": "Mutations",
+    "icon": "🐙",
+    "effect": "mutation",
+    "mutation": "tentacles",
+    "color": "#8e44ad",
+    "cost": 8,
+    "cooldown": 5,
+    "desc": "Des tentacules ondulants."
+   },
+   {
+    "id": "sp_shell",
+    "name": "Carapace",
+    "family": "Mutations",
+    "icon": "🐢",
+    "effect": "mutation",
+    "mutation": "shell",
+    "color": "#5d6d2f",
+    "cost": 8,
+    "cooldown": 5,
+    "desc": "Une carapace protectrice."
+   },
+   {
+    "id": "sp_monster",
+    "name": "Transformation monstrueuse",
+    "family": "Mutations",
+    "icon": "👹",
+    "effect": "mutation",
+    "mutation": "monster",
+    "color": "#6fae4a",
+    "cost": 25,
+    "cooldown": 30,
+    "instability": 0.1,
+    "desc": "Devient une créature géante… et effrayante."
+   },
+   {
+    "id": "sp_timestop",
+    "name": "Arrêt du temps",
+    "family": "Pouvoirs rares",
+    "icon": "⏳",
+    "effect": "timestop",
+    "color": "#ffd54f",
+    "duration": 8,
+    "cost": 45,
+    "cooldown": 180,
+    "instability": 0.12,
+    "rareOnly": true,
+    "desc": "Fige le monde quelques secondes."
+   },
+   {
+    "id": "sp_portal",
+    "name": "Création de portails",
+    "family": "Pouvoirs rares",
+    "icon": "🌀",
+    "effect": "portal",
+    "color": "#8a2be2",
+    "duration": 120,
+    "range": 80,
+    "cost": 35,
+    "cooldown": 90,
+    "instability": 0.06,
+    "portalObject": "sp_portal",
+    "desc": "Relie deux endroits par un portail que tout le monde peut emprunter."
+   },
+   {
+    "id": "sp_gravity",
+    "name": "Manipulation de la gravité",
+    "family": "Pouvoirs rares",
+    "icon": "🪐",
+    "effect": "gravity",
+    "color": "#7986cb",
+    "range": 5,
+    "duration": 10,
+    "cost": 30,
+    "cooldown": 60,
+    "instability": 0.08,
+    "desc": "Fait flotter tout ce qui est proche."
+   },
+   {
+    "id": "sp_shapeshift",
+    "name": "Transformation de l’apparence",
+    "family": "Pouvoirs rares",
+    "icon": "🎭",
+    "effect": "shapeshift",
+    "color": "#f06292",
+    "duration": 180,
+    "range": 10,
+    "cost": 25,
+    "cooldown": 60,
+    "desc": "Prend l’apparence d’un autre habitant."
+   },
+   {
+    "id": "sp_clone",
+    "name": "Clones temporaires",
+    "family": "Pouvoirs rares",
+    "icon": "👥",
+    "effect": "clone",
+    "color": "#80cbc4",
+    "duration": 90,
+    "intensity": 1,
+    "cost": 40,
+    "cooldown": 120,
+    "instability": 0.05,
+    "desc": "Crée des copies autonomes qui disparaissent ensuite."
+   }
+  ],
+  "skills": [
+   {
+    "id": "powers",
+    "name": "Maîtrise des pouvoirs",
+    "icon": "⚡"
+   }
+  ],
+  "affordances": [
+   {
+    "id": "sp_recharge",
+    "name": "Se recharger",
+    "pose": "stand",
+    "anim": "cast_raise",
+    "needs": {
+     "fulfillment": 0.1,
+     "energy": 0.1
+    },
+    "powerEnergy": 2.5,
+    "minMin": 15,
+    "maxMin": 25,
+    "tags": [
+     "solo"
+    ]
+   },
+   {
+    "id": "sp_train_basic",
+    "name": "S’entraîner au combat",
+    "pose": "stand",
+    "anim": "punch",
+    "needs": {
+     "energy": -0.2,
+     "fun": 0.15,
+     "fulfillment": 0.1
+    },
+    "minMin": 20,
+    "maxMin": 40,
+    "tags": [
+     "sport",
+     "skill"
+    ],
+    "skill": "fitness"
+   }
+  ],
+  "objects": [
+   {
+    "id": "sp_dummy",
+    "name": "Mannequin d’entraînement",
+    "cat": "special",
+    "price": 300,
+    "model": "proc:dummy",
+    "size": [
+     1,
+     1
+    ],
+    "aff": [
+     "sp_train_basic"
+    ],
+    "trainingDummy": true,
+    "decor": 0
+   },
+   {
+    "id": "sp_crystal",
+    "name": "Cristal d’énergie",
+    "cat": "special",
+    "price": 1200,
+    "model": "proc:crystal",
+    "size": [
+     1,
+     1
+    ],
+    "aff": [
+     "sp_recharge",
+     "admire"
+    ],
+    "light": 0.8,
+    "decor": 4
+   },
+   {
+    "id": "sp_statue",
+    "name": "Statue du héros",
+    "cat": "special",
+    "price": 2500,
+    "model": "proc:statue",
+    "size": [
+     1,
+     1
+    ],
+    "aff": [
+     "admire"
+    ],
+    "decor": 5
+   },
+   {
+    "id": "sp_portal",
+    "name": "Portail",
+    "cat": "special",
+    "price": 0,
+    "model": "proc:portal",
+    "size": [
+     1,
+     1
+    ],
+    "aff": [],
+    "noCollide": true,
+    "hiddenInCatalog": true,
+    "light": 0.5,
+    "decor": 2
+   }
+  ],
+  "traits": [
+   {
+    "id": "sp_heroic",
+    "name": "Héroïque",
+    "icon": "🦸",
+    "desc": "Se précipite pour aider, avec ou sans pouvoirs.",
+    "actionWeights": {
+     "help": 1.8
+    },
+    "socialWeights": {
+     "friendly": 1.3
+    },
+    "emotionBias": {
+     "confident": 1.4
+    }
+   },
+   {
+    "id": "sp_villainous",
+    "name": "Machiavélique",
+    "icon": "🦹",
+    "desc": "Rêve de dominer le quartier.",
+    "conflicts": [
+     "kind"
+    ],
+    "socialWeights": {
+     "mean": 1.8
+    },
+    "emotionBias": {
+     "angry": 1.2,
+     "confident": 1.2
+    }
+   },
+   {
+    "id": "sp_unstable",
+    "name": "Instable",
+    "icon": "🌀",
+    "desc": "Ses émotions débordent… et ses pouvoirs aussi.",
+    "randomness": 2.0,
+    "emotionBias": {
+     "angry": 1.4,
+     "tense": 1.3
+    }
+   }
+  ],
+  "moodlets": [
+   {
+    "id": "sp_power_rush",
+    "name": "Montée de puissance",
+    "emotion": "energized",
+    "weight": 3,
+    "dur": 240
+   },
+   {
+    "id": "sp_exposed",
+    "name": "Identité révélée",
+    "emotion": "embarrassed",
+    "weight": 3,
+    "dur": 600
+   },
+   {
+    "id": "sp_hero_worship",
+    "name": "Fan de super-héros",
+    "emotion": "happy",
+    "weight": 2,
+    "dur": 360
+   }
+  ],
+  "socials": [
+   {
+    "id": "sp_show_off",
+    "name": "Frimer avec ses pouvoirs",
+    "cat": "power",
+    "icon": "😎",
+    "base": 60,
+    "req": {
+     "known": true
+    },
+    "requiresAnyPower": true,
+    "fx": {
+     "friend": 4,
+     "fun": 10,
+     "tMood": "sp_hero_worship"
+    },
+    "fail": {
+     "friend": -3,
+     "aMood": "embarrassed_social"
+    },
+    "autonomous": 1
+   },
+   {
+    "id": "sp_ask_powers",
+    "name": "Demander s’il/elle a des pouvoirs",
+    "cat": "deep",
+    "icon": "🤔",
+    "base": 55,
+    "req": {
+     "minFriend": 15
+    },
+    "fx": {
+     "friend": 3,
+     "social": 6
+    },
+    "fail": {
+     "friend": -2
+    },
+    "autonomous": 1
+   }
+  ],
+  "careers": [
+   {
+    "id": "sp_hero_pro",
+    "name": "Super-héros professionnel",
+    "icon": "🦸",
+    "venue": "office",
+    "start": 10,
+    "end": 18,
+    "days": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "skills": [
+     "powers",
+     "fitness"
+    ],
+    "levels": [
+     {
+      "title": "Justicier de quartier",
+      "pay": 150
+     },
+     {
+      "title": "Protecteur de la ville",
+      "pay": 280
+     },
+     {
+      "title": "Héros national",
+      "pay": 480
+     },
+     {
+      "title": "Légende vivante",
+      "pay": 900
+     }
+    ]
+   }
+  ],
+  "events": [
+   {
+    "id": "sp_discovery",
+    "name": "Découverte d’un pouvoir",
+    "icon": "✨",
+    "trigger": {
+     "type": "hourly",
+     "chance": 0.05
+    },
+    "conditions": {
+     "hasPower": false,
+     "adult": true
+    },
+    "cooldown": 480,
+    "effects": [
+     {
+      "type": "grant_random_power"
+     },
+     {
+      "type": "moodlet",
+      "id": "sp_power_rush"
+     },
+     {
+      "type": "animation",
+      "anim": "cast_raise",
+      "duration": 2
+     }
+    ]
+   },
+   {
+    "id": "sp_villain_arrives",
+    "name": "Apparition d’un super-vilain",
+    "icon": "🦹",
+    "trigger": {
+     "type": "daily",
+     "chance": 0.35
+    },
+    "cooldown": 1440,
+    "effects": [
+     {
+      "type": "spawn_villain"
+     }
+    ]
+   },
+   {
+    "id": "sp_competition",
+    "name": "Compétition de pouvoirs",
+    "icon": "⚡",
+    "trigger": {
+     "type": "hourly",
+     "chance": 0.03
+    },
+    "conditions": {
+     "hasPower": true
+    },
+    "cooldown": 600,
+    "effects": [
+     {
+      "type": "duel"
+     },
+     {
+      "type": "journal",
+      "text": "⚡ {actor} lance un défi de pouvoirs !",
+      "important": true
+     }
+    ]
+   },
+   {
+    "id": "sp_fan",
+    "name": "Un fan est né",
+    "icon": "🤩",
+    "trigger": {
+     "type": "power_used",
+     "chance": 0.15
+    },
+    "targetConditions": {
+     "hasPower": false
+    },
+    "cooldown": 300,
+    "effects": [
+     {
+      "type": "relationship",
+      "friend": 12
+     },
+     {
+      "type": "moodlet",
+      "on": "target",
+      "id": "sp_hero_worship"
+     },
+     {
+      "type": "journal",
+      "text": "🤩 {target} est devenu fan de {actor} après une démonstration de pouvoirs."
+     }
+    ]
+   },
+   {
+    "id": "sp_team",
+    "name": "Formation d’une équipe",
+    "icon": "🦸",
+    "trigger": {
+     "type": "daily",
+     "chance": 0.4
+    },
+    "conditions": {
+     "alignment": "hero"
+    },
+    "cooldown": 1440,
+    "effects": [
+     {
+      "type": "form_team"
+     }
+    ]
+   },
+   {
+    "id": "sp_training_boost",
+    "name": "Entraînement intensif",
+    "icon": "🎯",
+    "trigger": {
+     "type": "power_used",
+     "chance": 0.1
+    },
+    "cooldown": 240,
+    "effects": [
+     {
+      "type": "skill",
+      "skill": "powers",
+      "amount": 0.6
+     },
+     {
+      "type": "moodlet",
+      "id": "sp_power_rush"
+     }
+    ]
+   }
+  ],
+  "rules": [
+   {
+    "id": "distribution",
+    "name": "Répartition des pouvoirs",
+    "default": "few",
+    "options": [
+     {
+      "id": "everyone",
+      "name": "Tout le monde possède des pouvoirs"
+     },
+     {
+      "id": "few",
+      "name": "Seuls quelques personnages sont spéciaux"
+     },
+     {
+      "id": "secret",
+      "name": "Les pouvoirs sont secrets"
+     },
+     {
+      "id": "public_heroes",
+      "name": "Un monde de super-héros publics"
+     },
+     {
+      "id": "villains",
+      "name": "Un monde dominé par les super-vilains"
+     },
+     {
+      "id": "rare_dangerous",
+      "name": "Les pouvoirs sont rares et dangereux"
+     }
+    ]
+   }
+  ]
+ }
+}

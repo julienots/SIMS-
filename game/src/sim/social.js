@@ -35,6 +35,7 @@ export class SocialSystem {
     if (q.knowsSecret && !this.knownSecretOf(actor, target)) return 'Ne connaît aucun secret';
     if (social.cat === 'romantic' && (r.flags.family || rt.flags.family)) return 'Membre de la famille';
     if (social.requiresPower && !S.powers.hasPower(actor, social.requiresPower)) return 'Pouvoir requis';
+    if (social.requiresAnyPower && !S.powers.hasAnyPower(actor)) return 'Pouvoir requis';
     return null;
   }
 

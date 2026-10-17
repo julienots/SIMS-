@@ -329,6 +329,8 @@ export class Simulation extends Emitter {
     }
     s._rt.path = null;
     s._rt.sleeping = false;
+    s._rt.poseY = 0;
+    s._rt.vfx.activity = null;
     s._rt.carry = cancelled ? null : s._rt.carry;
     s._rt.speedMult = 1;
     if (a.kind === 'eat' || cancelled) s._rt.carry = null;
@@ -595,6 +597,7 @@ export class Simulation extends Emitter {
         const p = a.pt;
         a.enterT += dt;
         if (p.pose === 'hidden') { rt.hidden = true; s.flags.atVenue = o.id; a.phase = 'loop'; return; }
+        rt.poseY = def.poseY ?? (p.pose === 'lie' ? 0.34 : 0);
         const rot = p.pose === 'stand' && !def.inside ? this.angleTo(s, w.objCenter(o)) : p.rot;
         const done = this.slideTo(s, p.x, p.y, rot, dt);
         rt.anim = p.pose === 'sit' ? 'sit_down' : p.pose === 'lie' ? 'lie_down' : 'idle';
@@ -624,6 +627,7 @@ export class Simulation extends Emitter {
         rt.sleeping = false;
         if (a.pt.pose === 'hidden') { rt.hidden = false; s.flags.atVenue = null; }
         rt.anim = a.pt.pose === 'sit' ? 'stand_up' : a.pt.pose === 'lie' ? 'lie_up' : 'idle';
+        if (a.exitT > 0.7) rt.poseY = 0;
         const back = { x: a.pt.ax + 0.5, y: a.pt.ay + 0.5 };
         if (a.exitT > (a.pt.pose === 'stand' ? 0.1 : 0.8)) {
           if (this.slideTo(s, back.x, back.y, undefined, dt) || a.exitT > 2.5) {
@@ -660,6 +664,7 @@ export class Simulation extends Emitter {
       if (v > 0 && n === 'fun' && emo.funBoost) v *= emo.funBoost;
       s.needs[n] = clamp(s.needs[n] + v, 0, 100);
     }
+    if (aff.powerEnergy && s.modData.powers) s.modData.powers.energy = clamp(s.modData.powers.energy + aff.powerEnergy * dtMin, 0, 100);
     // L'épanouissement monte quand l'activité correspond aux goûts.
     if (ACTIVITY_LIKES[s.likes?.activity]?.includes(aff.id)) s.needs.fulfillment = clamp(s.needs.fulfillment + 0.1 * dtMin, 0, 100);
   }

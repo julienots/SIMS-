@@ -4,6 +4,7 @@
 import { clamp, dist, uid } from '../core/util.js';
 import { registry } from '../mods/registry.js';
 import { simName } from './simulation.js';
+import { createSim as createSimFn } from './factory.js';
 import { LEVEL_HEIGHT } from './world.js';
 
 export const EFFECT_TYPES = ['projectile', 'beam', 'shield', 'pulse', 'absorb', 'flight', 'speed', 'superjump', 'teleport', 'levitate', 'climb',
@@ -221,9 +222,15 @@ export class PowerSystem {
     }
     // Vilains : méfaits.
     if (al === 'villain' && d.energy > 40 && w.rng.chance(0.25)) out.push({ score: 1.6, action: { kind: 'power', power: '__mischief', name: 'Commettre un méfait', icon: '😈' } });
-    // Démonstration publique (si le monde n'est pas en mode secret).
-    if (al !== 'hidden' && d.identity !== 'secret' && trainable.length && d.energy > 60 && s.traits.some(t => ['outgoing', 'funny', 'rebel'].includes(t)))
-      out.push({ score: 0.5, action: { kind: 'power', power: '__show', name: 'Démonstration publique', icon: '🎆' } });
+    // Utiliser ses pouvoirs est amusant : l'envie dépend du besoin de divertissement.
+    const funUrge = 0.5 + (100 - s.needs.fun) / 100 * 1.6;
+    if (al !== 'hidden' && d.identity !== 'secret' && trainable.length && d.energy > 45)
+      out.push({ score: funUrge * (s.traits.some(t => ['outgoing', 'funny', 'rebel'].includes(t)) ? 1.4 : 0.9), action: { kind: 'power', power: '__show', name: 'Démonstration publique', icon: '🎆' } });
+    const selfish = this.powersOf(s).filter(p => ['levitate', 'shield', 'absorb', 'speed'].includes(p.effect) && !this.status(s, p));
+    if (selfish.length && d.energy > 30) {
+      const p = w.rng.pick(selfish);
+      out.push({ score: (p.effect === 'levitate' ? (100 - s.needs.comfort) / 60 : p.effect === 'absorb' ? (100 - d.energy) / 50 : 0.5) * (d.identity === 'secret' ? 0.3 : 1), action: { kind: 'power', power: p.id, name: p.name, icon: p.icon } });
+    }
     return out;
   }
 
@@ -434,6 +441,8 @@ export class PowerSystem {
       case 'regen': case 'resist': case 'climb': case 'telepathy':
         break;
     }
+    s.needs.fun = clamp(s.needs.fun + 6, 0, 100);
+    s.needs.fulfillment = clamp(s.needs.fulfillment + 2, 0, 100);
     this.witness(s, p);
     this.firstTime(s, p);
     S.emit('powerUsed', { sim: s.id, power: p.id });
@@ -803,6 +812,45 @@ export class PowerSystem {
     if (target && SIM_EFFECTS.includes(p.effect)) a.target = target.id;
     else if (POINT_EFFECTS.includes(p.effect)) a.point = { x: Math.floor(s.pos.x) + 3, y: Math.floor(s.pos.y), l: s.pos.l };
     this.S.enqueue(s, a, false);
+  }
+
+  formTeam(leader) {
+    const w = this.w;
+    const heroes = w.sims.filter(s => s.id !== leader.id && this.alignment(s) === 'hero' && this.hasAnyPower(s));
+    if (!heroes.length) return;
+    w.d.groups ||= [];
+    let team = w.d.groups.find(g => g.kind === 'heroes' && g.members.includes(leader.id));
+    const fresh = !team;
+    if (!team) { team = { id: uid('team'), kind: 'heroes', name: `Les Gardiens de ${leader.first}`, members: [leader.id] }; w.d.groups.push(team); }
+    const recruit = heroes.find(h => !team.members.includes(h.id));
+    if (!recruit) return;
+    team.members.push(recruit.id);
+    for (const m of team.members) for (const n of team.members) if (m !== n) { const r = w.rel(m, n); r.known = true; r.flags.teammate = true; r.friend = clamp(r.friend + 15, -100, 100); }
+    w.log('power', fresh ? `🦸 ${simName(leader)} et ${simName(recruit)} forment une équipe : « ${team.name} » !` : `🦸 ${simName(recruit)} rejoint « ${team.name} ».`, team.members, { icon: '🦸', important: true });
+  }
+
+  // Un super-vilain venu d'ailleurs débarque en ville (squelette ou humain masqué).
+  spawnVillain(e = {}) {
+    const w = this.w, S = this.S;
+    if (w.sims.filter(s => s.flags.villainVisitor).length >= 2) return null;
+    const pool = [...registry.powers.values()].filter(p => ['projectile', 'pulse', 'illusion', 'beam', 'teleport'].includes(p.effect));
+    if (!pool.length) return null;
+    const v = createSimFn(w.rng, { stage: 'adult', first: w.rng.pick(['Némésis', 'Ombre', 'Docteur Chaos', 'Vortex', 'Lady Venin', 'Crâne Noir']), last: '' });
+    v.last = '(super-vilain)';
+    v.appearance.body = w.rng.pick(['Skeleton_Warrior', 'Skeleton_Rogue', 'Skeleton_Mage', 'Rogue_Hooded']);
+    v.appearance.cape = true; v.appearance.hat = true;
+    v.flags.villainVisitor = true;
+    v.traits = ['selfish', 'rebel', 'brave'];
+    v.career = { id: 'unemployed', level: 0, perf: 0, days: 0 };
+    const d = this.data(v, true);
+    d.alignment = 'villain'; d.energy = 100;
+    for (let i = 0; i < 2; i++) { const p = w.rng.pick(pool); d.list[p.id] = { mastery: w.rng.int(2, 6), cd: 0, uses: 0 }; }
+    // Arrive par une route en bordure de carte.
+    const rx = w.d.map.roadsX?.[0] ?? 2;
+    S.addSim(v, rx + 1, 1, 0);
+    w.log('power', `🦹 Un super-vilain apparaît en ville : ${v.first} !`, [v.id], { icon: '🦹', important: true });
+    S.emit('notify', { text: `Alerte : ${v.first} débarque en ville !`, icon: '🦹', sim: v.id });
+    return v;
   }
 
   // ------------------------------------------------------------------ distribution selon les règles du monde

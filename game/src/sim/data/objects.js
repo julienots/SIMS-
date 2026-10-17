@@ -100,7 +100,7 @@ export const OBJECTS = [
   // --- Salle de bain
   { id: 'toilet', name: 'Toilettes', cat: 'sdb', price: 300, model: 'proc:toilet', size: [1, 1], aff: ['toilet'], seats: [[0, 0.05]], decor: 0 },
   { id: 'shower', name: 'Cabine de douche', cat: 'sdb', price: 650, model: 'proc:shower', size: [1, 1], aff: ['shower'], stand: [0, 0], inside: true, decor: 1 },
-  { id: 'bathtub', name: 'Baignoire', cat: 'sdb', price: 900, model: 'proc:bathtub', size: [2, 1], aff: ['bath'], beds: [[0, 0]], decor: 2 },
+  { id: 'bathtub', name: 'Baignoire', cat: 'sdb', price: 900, model: 'proc:bathtub', size: [2, 1], aff: ['bath'], beds: [[0, 0]], poseY: 0.15, decor: 2 },
   { id: 'sink_bath', name: 'Lavabo', cat: 'sdb', price: 250, model: 'proc:sink', size: [1, 1], aff: ['wash_hands', 'drink'], decor: 1 },
   { id: 'towels', name: 'Porte-serviettes', cat: 'sdb', price: 60, model: 'kitchen/towelrail', scale: 0.55, size: [1, 1], aff: [], wall: true, noCollide: true, decor: 1 },
   // --- Bureau

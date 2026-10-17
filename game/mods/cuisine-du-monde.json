@@ -1,0 +1,159 @@
+{
+ "format": 1,
+ "id": "example.cuisine-du-monde",
+ "name": "Cuisine du monde",
+ "version": "1.0.0",
+ "author": "SUPERESSENCE STUDIO (exemple)",
+ "icon": "🍜",
+ "description": "Exemple de mod : nouveaux postes de cuisine, recettes et un trait « Gourmet ».",
+ "dependencies": [],
+ "content": {
+  "affordances": [
+   {
+    "id": "cook_sushi",
+    "name": "Préparer des sushis",
+    "pose": "stand",
+    "anim": "interact",
+    "needs": {
+     "fun": 0.15,
+     "fulfillment": 0.1
+    },
+    "minMin": 40,
+    "maxMin": 50,
+    "tags": [
+     "food",
+     "skill",
+     "creative"
+    ],
+    "skill": "cooking",
+    "produces": "meal",
+    "cost": 25,
+    "minStage": "teen"
+   },
+   {
+    "id": "cook_pizza",
+    "name": "Cuire une pizza",
+    "pose": "stand",
+    "anim": "interact",
+    "needs": {
+     "fun": 0.1
+    },
+    "minMin": 35,
+    "maxMin": 45,
+    "tags": [
+     "food",
+     "skill"
+    ],
+    "skill": "cooking",
+    "produces": "meal",
+    "cost": 20,
+    "minStage": "teen",
+    "vfx": "smoke"
+   }
+  ],
+  "objects": [
+   {
+    "id": "wok_station",
+    "name": "Station wok & sushi",
+    "cat": "cuisine",
+    "price": 950,
+    "model": "kitchen/stove_single",
+    "tint": "#ffd59a",
+    "scale": 0.5,
+    "size": [
+     1,
+     1
+    ],
+    "aff": [
+     "cook_sushi",
+     "cook"
+    ],
+    "stand": [
+     0,
+     0.85
+    ],
+    "cookStation": true,
+    "decor": 2
+   },
+   {
+    "id": "pizza_oven",
+    "name": "Four à pizza",
+    "cat": "cuisine",
+    "price": 1300,
+    "model": "kitchen/oven",
+    "tint": "#ffab91",
+    "scale": 0.5,
+    "size": [
+     1,
+     1
+    ],
+    "aff": [
+     "cook_pizza"
+    ],
+    "stand": [
+     0,
+     0.85
+    ],
+    "cookStation": true,
+    "decor": 3
+   }
+  ],
+  "traits": [
+   {
+    "id": "gourmet",
+    "name": "Gourmet",
+    "icon": "🧑‍🍳",
+    "desc": "Vit pour bien manger.",
+    "actionWeights": {
+     "food": 1.8
+    },
+    "needDecay": {
+     "hunger": 1.2
+    },
+    "emotionBias": {
+     "happy": 1.2
+    }
+   }
+  ],
+  "moodlets": [
+   {
+    "id": "world_flavors",
+    "name": "Saveurs du monde",
+    "emotion": "happy",
+    "weight": 2,
+    "dur": 240
+   }
+  ],
+  "events": [
+   {
+    "id": "food_festival",
+    "name": "Festival culinaire",
+    "icon": "🍱",
+    "trigger": {
+     "type": "daily",
+     "chance": 0.3
+    },
+    "conditions": {
+     "skillMin": {
+      "cooking": 3
+     }
+    },
+    "effects": [
+     {
+      "type": "moodlet",
+      "id": "world_flavors"
+     },
+     {
+      "type": "money",
+      "amount": 150
+     },
+     {
+      "type": "journal",
+      "text": "🍱 {actor} remporte un prix au festival culinaire du quartier !",
+      "important": true
+     }
+    ]
+   }
+  ]
+ }
+}

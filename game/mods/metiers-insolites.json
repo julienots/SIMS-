@@ -1,0 +1,124 @@
+{
+ "format": 1,
+ "id": "example.metiers-insolites",
+ "name": "Métiers insolites",
+ "version": "1.0.0",
+ "author": "SUPERESSENCE STUDIO (exemple)",
+ "icon": "🧑‍🚀",
+ "description": "Exemple de mod : trois nouveaux métiers (astronaute, détective, DJ).",
+ "dependencies": [],
+ "content": {
+  "careers": [
+   {
+    "id": "astronaut",
+    "name": "Astronaute",
+    "icon": "🧑‍🚀",
+    "venue": "office",
+    "start": 8,
+    "end": 16,
+    "days": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "skills": [
+     "logic",
+     "fitness"
+    ],
+    "levels": [
+     {
+      "title": "Cadet de l’espace",
+      "pay": 180
+     },
+     {
+      "title": "Pilote d’essai",
+      "pay": 300
+     },
+     {
+      "title": "Commandant de bord",
+      "pay": 520
+     },
+     {
+      "title": "Explorateur galactique",
+      "pay": 950
+     }
+    ]
+   },
+   {
+    "id": "detective",
+    "name": "Détective",
+    "icon": "🕵️",
+    "venue": "office",
+    "start": 12,
+    "end": 20,
+    "days": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "skills": [
+     "logic",
+     "charisma"
+    ],
+    "levels": [
+     {
+      "title": "Fouineur",
+      "pay": 120
+     },
+     {
+      "title": "Enquêteur",
+      "pay": 230
+     },
+     {
+      "title": "Inspecteur",
+      "pay": 380
+     },
+     {
+      "title": "Fin limier",
+      "pay": 600
+     }
+    ]
+   },
+   {
+    "id": "dj",
+    "name": "DJ",
+    "icon": "🎧",
+    "venue": "cinema",
+    "start": 18,
+    "end": 24,
+    "days": [
+     3,
+     4,
+     5,
+     6
+    ],
+    "skills": [
+     "music",
+     "charisma"
+    ],
+    "levels": [
+     {
+      "title": "DJ de soirée",
+      "pay": 110
+     },
+     {
+      "title": "DJ résident",
+      "pay": 220
+     },
+     {
+      "title": "Tête d’affiche",
+      "pay": 420
+     },
+     {
+      "title": "Légende de l’électro",
+      "pay": 780
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -137,7 +137,7 @@ export class World extends Emitter {
     const cos = Math.cos(a), sin = Math.sin(a);
     return { x: c.x + lx * cos - lz * sin, y: c.y + lx * sin + lz * cos };
   }
-  objFacing(o) { return (o.rot & 3) * Math.PI / 2; } // angle de la face avant (0 = +y)
+  objFacing(o) { return -(o.rot & 3) * Math.PI / 2; } // angle (convention atan2(dx, dy)) de la face avant
 
   addObject(defId, x, y, rot = 0, level = 0, extra = {}) {
     const o = { id: uid('o'), def: defId, x, y, rot: rot & 3, level, state: {}, ...extra };
