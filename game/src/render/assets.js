@@ -56,7 +56,9 @@ export async function characterTemplate(body) {
   if (REAL_IDS.has(body)) {
     const female = /female/i.test(body);
     const [gltf, animG] = await Promise.all([loadGLB(`real/${body}`), loadGLB(`real/anims_${female ? 'f' : 'm'}`)]);
-    return { scene: gltf.scene, animations: animG.animations, real: true };
+    // Hauteur de repos de la racine du squelette des animations : référence pour adapter les clips à chaque corps.
+    let animRoot = 0; animG.scene.traverse(o => { if (!animRoot && o.name === 'Bip01') animRoot = o.position.length(); });
+    return { scene: gltf.scene, animations: animG.animations, real: true, animRoot: animRoot || 0.919 };
   }
   const path = `characters/${body}`;
   const [gltf, animG] = await Promise.all([loadGLB(path), loadGLB(ANIM_SOURCE[body] || 'characters/Knight')]);

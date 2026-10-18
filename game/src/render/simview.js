@@ -88,6 +88,7 @@ export class SimView {
     const model = cloneCharacter(tpl);
     this.model = model;
     this.real = !!tpl.real;
+    this.animRoot = tpl.animRoot;
     const stage = LIFE_STAGES.find(x => x.id === s.stage) || { scale: 1 };
     this.bones = {};
     model.traverse(o => { if (o.isBone || /^Bip01/.test(o.name)) this.bones[o.name] = o; });
@@ -169,13 +170,26 @@ export class SimView {
   fitClip(c) {
     const tr = c.tracks.find(t => t.name === 'Bip01.position');
     if (!tr) return c;
-    const v = tr.values;
-    const ref = Math.hypot(v[0], v[1], v[2]) || 1;
-    const k = this.rootRef / ref;
-    if (Math.abs(k - 1) < 0.02) return c;
+    // Rapport des hauteurs de repos (corps / squelette des animations), identique pour tous les clips :
+    // ne pas le calculer sur la 1re image, qui est déjà assise ou accroupie dans certains clips.
+    const k = this.rootRef / (this.animRoot || 0.919);
     const cc = c.clone();
     const t2 = cc.tracks.find(t => t.name === 'Bip01.position');
-    t2.values = Float32Array.from(t2.values, x => x * k);
+    const v = t2.values, times = t2.times, n = times.length, T = times[n - 1] || 1;
+    // Le déplacement est géré par la simulation : on retire l'avancée horizontale des clips (la marche avance
+    // de 1,2 m par cycle, sinon le Sim « recule » à chaque boucle). On garde le balancement et la hauteur.
+    // S'asseoir / se lever : le bassin recule de ~45 cm dans la capture ; le jeu place déjà le Sim sur l'assise,
+    // on supprime donc tout mouvement horizontal.
+    const inPlace = /sit_down|stand_up/.test(c.name);
+    const dx = v[(n - 1) * 3] - v[0], dz = v[(n - 1) * 3 + 2] - v[2];
+    const out = new Float32Array(v.length);
+    for (let i = 0; i < n; i++) {
+      const f = times[i] / T;
+      out[i * 3] = (inPlace ? v[0] : v[i * 3] - dx * f) * k;
+      out[i * 3 + 1] = v[i * 3 + 1] * k;
+      out[i * 3 + 2] = (inPlace ? v[2] : v[i * 3 + 2] - dz * f) * k;
+    }
+    t2.values = out;
     return cc;
   }
 
@@ -323,6 +337,15 @@ export class SimView {
     if (s.stage === 'baby') anim = 'lie';
     if (rt.vfx?.flying && (anim === 'walk' || anim === 'run' || anim === 'idle')) anim = 'fly';
     this.play(anim);
+    // Cadence de marche/course calée sur la vitesse réelle au sol (pieds qui ne glissent pas).
+    if (this.real && dt > 0 && this.cur && (anim === 'walk' || anim === 'run')) {
+      const p = this.group.position, lp = this.lastPos || (this.lastPos = p.clone());
+      const v = Math.hypot(p.x - lp.x, p.z - lp.z) / dt;
+      this.gs = this.gs === undefined ? v : this.gs + (v - this.gs) * Math.min(1, dt * 6);
+      const clipSpeed = (anim === 'run' ? 2.86 : 1.02) * (this.rootRef / (this.animRoot || 0.919));
+      this.cur.timeScale = THREE.MathUtils.clamp(this.gs / clipSpeed, 0.4, 3);
+    }
+    (this.lastPos ||= new THREE.Vector3()).copy(this.group.position);
     if (this.frame % every === 0) this.mixer.update(dt * every);
     // Allongé (lit, baignoire) : les animations réalistes n'ont pas de pose couchée, on bascule le corps.
     const lying = this.real && LIE.has(anim);

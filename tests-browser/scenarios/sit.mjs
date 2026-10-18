@@ -19,7 +19,7 @@ export default async ({ wait, shot, ev, page }) => {
       const menu = S.objectMenu ? S.objectMenu(s, o) : null;
       const item = (menu || []).find(i => /assoir|Assoir|Se détendre|Sit/i.test(i.label)) || (menu || [])[0];
       if (item) S.enqueue(s, { ...item.action }, true);
-      g.selected = s.id; g.rig.setMode('close'); g.rig.goalDist = 3.5; g.rig.goalPitch = 0.25;
+      g.selected = s.id; g.rig.setMode('close'); g.rig.goalDist = 4.2; g.rig.goalPitch = 0.75;
       return `${o.def} ${item ? item.label : 'pas de menu'}`;
     }, re.source);
     console.log(name, r);

@@ -497,6 +497,13 @@ export class WorldView {
     model.scale.setScalar(s * (o.state?.size && def?.building ? o.state.size / (def.size[0]) : 1));
     // sy : étirement vertical des meubles cartoon pour des humains à l'échelle réelle (plan de travail à 90 cm…).
     if (def?.sy) model.scale.y *= def.sy;
+    // fit : les meubles réalistes sont à l'échelle réelle ; s'ils dépassent leur emprise au sol (cases), on les
+    // resserre en largeur/profondeur seulement, la hauteur reste réelle (assise, plan de travail).
+    if (def?.fit) {
+      const b = new THREE.Box3().setFromObject(model), sz = b.getSize(new THREE.Vector3());
+      const fx = Math.min(1, (def.size[0] * 0.98) / (sz.x || 1)), fz = Math.min(1, (def.size[1] * 0.98) / (sz.z || 1));
+      model.scale.x *= fx; model.scale.z *= fz;
+    }
     // Assiettes : posées à la hauteur du plan (top) sur lequel elles sont servies, sinon au sol.
     if (o.def === 'meal_plate') { const on = o.state?.on && this.world.objects.find(x => x.id === o.state.on); model.position.y = (on ? registry.object(on.def)?.top ?? 0.86 : 0) - 0.86; }
     if (def?.wall) model.position.set(0, def.wallY || 0, -0.5 * (def.size[1] || 1) + (def.model?.startsWith('proc:') ? 0.05 : 0.02));

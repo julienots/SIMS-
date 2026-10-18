@@ -1,0 +1,208 @@
+[
+ {
+  "id": "sofa_dark",
+  "prefab": "Sofa_214_1"
+ },
+ {
+  "id": "sofa_white",
+  "prefab": "Sofa_201_1"
+ },
+ {
+  "id": "armchair_grey",
+  "prefab": "Armchair_208_1"
+ },
+ {
+  "id": "armchair_white",
+  "prefab": "Armchair_219_1"
+ },
+ {
+  "id": "coffee_table",
+  "prefab": "Coffee_Table_215_1"
+ },
+ {
+  "id": "tv_set",
+  "parts": [
+   {
+    "prefab": "TV_Stand_206_1"
+   },
+   {
+    "prefab": "Television_5",
+    "onTop": 0
+   }
+  ]
+ },
+ {
+  "id": "bookshelf",
+  "prefab": "Shelving_Unit_325_1"
+ },
+ {
+  "id": "fridge_steel",
+  "prefab": "Fridge_20"
+ },
+ {
+  "id": "fridge_white",
+  "prefab": "Fridge_26"
+ },
+ {
+  "id": "stove",
+  "prefab": "StoveBase1"
+ },
+ {
+  "id": "counter",
+  "prefab": "Countertop_I_4x2"
+ },
+ {
+  "id": "kitchen_sink",
+  "parts": [
+   {
+    "prefab": "Countertop_I_4x2"
+   },
+   {
+    "prefab": "Sink_10",
+    "onTop": 0,
+    "pos": [
+     0,
+     -0.16,
+     0.02
+    ]
+   },
+   {
+    "prefab": "Kitchen_Faucet_2",
+    "onTop": 0,
+    "pos": [
+     0,
+     0,
+     -0.2
+    ],
+    "scale": 0.55
+   }
+  ]
+ },
+ {
+  "id": "table_small",
+  "prefab": "Dining_Table_21_1"
+ },
+ {
+  "id": "table_round",
+  "prefab": "Dining_Table_16_1"
+ },
+ {
+  "id": "table_long",
+  "prefab": "Dining_Table_208_1"
+ },
+ {
+  "id": "chair_white",
+  "prefab": "Chair_204_1"
+ },
+ {
+  "id": "chair_bistro",
+  "prefab": "Chair_007_1"
+ },
+ {
+  "id": "chair_wood",
+  "prefab": "Chair_002_1"
+ },
+ {
+  "id": "chair_modern",
+  "prefab": "Chair_210_1"
+ },
+ {
+  "id": "stool",
+  "prefab": "Stool_2_1"
+ },
+ {
+  "id": "bed_double",
+  "prefab": "Bed_10"
+ },
+ {
+  "id": "bed_canopy",
+  "prefab": "Bed_22"
+ },
+ {
+  "id": "bed_single",
+  "prefab": "Bed_5"
+ },
+ {
+  "id": "bed_single_wood",
+  "prefab": "Bed_26_1"
+ },
+ {
+  "id": "dresser_wide",
+  "prefab": "Dresser_315_1"
+ },
+ {
+  "id": "dresser_small",
+  "prefab": "Dresser_318_1"
+ },
+ {
+  "id": "nightstand",
+  "prefab": "Side_Table_306_1"
+ },
+ {
+  "id": "toilet",
+  "prefab": "Toilet_1",
+  "rotY": -90
+ },
+ {
+  "id": "bath_sink",
+  "prefab": "Sink_20"
+ },
+ {
+  "id": "desk",
+  "prefab": "Desk_204_1"
+ },
+ {
+  "id": "computer_desk",
+  "parts": [
+   {
+    "prefab": "Desk_303_1"
+   },
+   {
+    "prefab": "Laptop_1",
+    "onTop": 0,
+    "pos": [
+     0,
+     0,
+     -0.05
+    ]
+   },
+   {
+    "prefab": "Chair_210_1",
+    "rotY": 180,
+    "pos": [
+     0,
+     0,
+     0.6
+    ]
+   }
+  ]
+ },
+ {
+  "id": "lamp_floor",
+  "prefab": "Floor_Lamp_1"
+ },
+ {
+  "id": "lamp_table",
+  "prefab": "Desk_Lamp_6"
+ },
+ {
+  "id": "trash",
+  "prefab": "bin_1"
+ },
+ {
+  "id": "plant_large",
+  "prefab": "Houseplant_8"
+ },
+ {
+  "id": "plant_small",
+  "prefab": "Houseplant_15"
+ },
+ {
+  "id": "cabinet",
+  "prefab": "Shelving_Unit_206_1"
+ },
+ {
+  "id": "microwave",
+  "prefab": "Microwave_1"
+ }
+]
