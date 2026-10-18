@@ -13,6 +13,7 @@
   },
   "license": "UNLICENSED",
   "dependencies": {
+    "@dgreenheck/ez-tree": "^1.1.0",
     "@fontsource/fredoka": "^5.1.0",
     "@fontsource/nunito": "^5.1.0",
     "three": "^0.170.0"

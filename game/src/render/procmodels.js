@@ -1,6 +1,7 @@
 // Modèles procéduraux pour les objets sans asset libre disponible (voir docs/ASSETS.md).
 // Construits à partir de primitives Three.js, avec des matériaux PBR simples.
 import * as THREE from 'three';
+import { treeModel } from './nature.js';
 
 const matCache = new Map();
 export function mat(color, opts = {}) {
@@ -25,6 +26,8 @@ function sphere(r, color, x = 0, y = 0, z = 0, opts) {
 }
 
 export function buildProcModel(kind, def, loadGLB) {
+  // Arbres et sapins réalistes générés par ez-tree (modèle partagé par essence, orientation aléatoire).
+  if (kind === 'tree' || kind === 'pine' || kind === 'bush') return treeModel(kind, Math.floor(Math.random() * 100000), !!globalThis.__liteNature);
   const g = new THREE.Group();
   const add = (...ms) => ms.forEach(m => g.add(m));
   switch (kind) {

@@ -123,7 +123,7 @@ export const OBJECTS = [
   { id: 'fountain', name: 'Fontaine', cat: 'jardin', price: 1800, model: 'nature/pavement-fountain', scale: 3, size: [3, 3], aff: ['fountain_wish', 'admire'], decor: 6 },
   { id: 'tree', name: 'Arbre', cat: 'jardin', price: 150, model: 'proc:tree', size: [1, 1], aff: ['admire'], decor: 2 },
   { id: 'pine', name: 'Sapin', cat: 'jardin', price: 150, model: 'proc:pine', size: [1, 1], aff: [], decor: 2 },
-  { id: 'bush', name: 'Buisson', cat: 'jardin', price: 40, model: 'city/bush', scale: 4.5, size: [1, 1], aff: [], decor: 1 },
+  { id: 'bush', name: 'Buisson', cat: 'jardin', price: 40, model: 'proc:bush', size: [1, 1], aff: [], decor: 1 },
   { id: 'flowers', name: 'Massif de fleurs', cat: 'jardin', price: 60, model: 'proc:flowers', size: [1, 1], aff: ['admire'], decor: 2, noCollide: true },
   { id: 'trees_patch', name: 'Bosquet', cat: 'jardin', price: 300, model: 'nature/grass-trees-tall', scale: 2, size: [2, 2], aff: ['admire'], decor: 3 },
   // --- Décoration

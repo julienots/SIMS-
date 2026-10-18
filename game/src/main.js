@@ -81,7 +81,7 @@ class App {
 
   // ------------------------------------------------------------------ assistant de création d'univers
   newWorldWizard() {
-    const st = { ...DEFAULT_SETTINGS, mapSize: 96, population: 12 };
+    const st = { ...DEFAULT_SETTINGS, mapSize: 128, population: 16 };
     let name = 'Mon univers';
     let modsOn = [...(this.settings.defaultMods || [])];
     let distribution = 'few';
@@ -94,7 +94,7 @@ class App {
           h('label', { class: 'field' }, 'Nom du monde', h('input', { type: 'text', value: name, maxlength: 40, onchange: e => { name = e.target.value || 'Mon univers'; } })),
           h('h3', {}, 'Environnement'),
           h('div', { class: 'grid' }, ...ENVIRONMENTS.map(e => h('button', { class: `card ${st.environment === e.id ? 'selected' : ''}`, onclick: () => { st.environment = e.id; render(); } }, h('div', { class: 'big' }, e.icon), h('div', { class: 'title' }, e.name), h('div', { class: 'muted' }, e.desc)))),
-          opt('Taille de la carte', 'mapSize', [64, 96, 128, 160], { 64: 'Petite (1 quartier)', 96: 'Moyenne', 128: 'Grande', 160: 'Très grande' }),
+          opt('Taille de la carte', 'mapSize', [64, 96, 128, 160, 224, 288], { 64: 'Petite (1 quartier)', 96: 'Moyenne', 128: 'Grande', 160: 'Très grande', 224: 'Immense', 288: 'Ville entière' }),
           opt('Habitants au départ', 'population', [4, 8, 12, 18, 26], {}),
           opt('Style visuel', 'style', ['stylise', 'cartoon', 'realiste'], { stylise: 'Stylisé détaillé', cartoon: 'Cartoon lumineux', realiste: 'Plus réaliste' }),
           opt('Exigence des besoins (réalisme)', 'realism', ['detendu', 'equilibre', 'exigeant'], { detendu: 'Détendu', equilibre: 'Équilibré', exigeant: 'Exigeant' }),

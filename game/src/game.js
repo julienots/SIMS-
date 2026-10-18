@@ -20,6 +20,7 @@ export class Game {
     this.input = input;
     this.settings = settings;
     this.quality = qualityPreset(settings.quality || 'auto');
+    globalThis.__liteNature = this.quality.name !== 'high';
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: this.quality.aa, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, this.quality.pixelRatio));
     this.renderer.shadowMap.enabled = this.quality.shadows;
@@ -73,6 +74,7 @@ export class Game {
     const sp = world.d.mods.data['superessence.superpowers'];
     if (registry.hasPowers() && (!sp || !sp.distributed)) this.sim.powers.distribute(sp?.distribution || 'few');
     this.worldView = new WorldView(this.scene, world, this.sim, this.quality);
+    this.worldView.setRenderer(this.renderer);
     this.rig.bounds = { w: world.w, h: world.h };
     for (const s of world.sims) this.addSimView(s);
     this.listeners = [

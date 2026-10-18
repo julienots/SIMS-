@@ -6,6 +6,7 @@ import { WALL_STYLES, FLOOR_STYLES } from '../sim/data/objects.js';
 import { ANIMALS } from '../sim/data/animals.js';
 import { LEVEL_HEIGHT, LEVELS } from '../sim/world.js';
 import { objectModel, loadGLB } from './assets.js';
+import { terrainMaterial, GrassField, updateNature, skyTexture } from './nature.js';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 const WALL_H = LEVEL_HEIGHT, WALL_T = 0.14, LOW_H = 0.3;
@@ -103,7 +104,26 @@ export class WorldView {
     ];
   }
 
+  // Appelé par le jeu : environnement PMREM depuis le ciel photo, herbe 3D.
+  setRenderer(renderer) {
+    this.renderer = renderer;
+    const tex = skyTexture();
+    const apply = () => {
+      if (!tex.image || this.disposed) return;
+      const pm = new THREE.PMREMGenerator(renderer);
+      this.envRT = pm.fromEquirectangular(tex);
+      this.scene.environment = this.envRT.texture;
+      pm.dispose();
+    };
+    if (tex.image?.complete) apply(); else { const t0 = setInterval(() => { if (tex.image?.complete || this.disposed) { clearInterval(t0); apply(); } }, 200); }
+    if (this.quality.grass !== false) this.grass = new GrassField(this.root, this.world, this.quality);
+  }
+
   dispose() {
+    this.disposed = true;
+    this.grass?.dispose();
+    if (this.scene.environment === this.envRT?.texture) this.scene.environment = null;
+    this.envRT?.dispose();
     this.unsub.forEach(u => u());
     this.scene.remove(this.root);
     this.scene.remove(this.sun); this.scene.remove(this.sun.target); this.scene.remove(this.hemi);
@@ -129,12 +149,27 @@ export class WorldView {
     this.scene.fog = new THREE.Fog('#bfe3ff', 90, 320);
     // Ciel : dôme dégradé + lune + planètes (univers futuriste / spatial).
     const skyGeo = new THREE.SphereGeometry(600, 24, 12);
+    // Ciel photographique (panorama Poly Haven CC0) teinté selon l'heure et la météo ; dégradé en secours.
     this.skyMat = new THREE.ShaderMaterial({
       side: THREE.BackSide, depthWrite: false, fog: false,
-      uniforms: { top: { value: new THREE.Color('#5fa8ff') }, bottom: { value: new THREE.Color('#dff1ff') } },
+      uniforms: { top: { value: new THREE.Color('#5fa8ff') }, bottom: { value: new THREE.Color('#dff1ff') }, tSky: { value: skyTexture() }, uPhoto: { value: 1 }, uNight: { value: 0 }, uDusk: { value: 0 }, uCloudy: { value: 0 } },
       vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-      fragmentShader: 'uniform vec3 top; uniform vec3 bottom; varying vec3 vP; void main(){ float h = clamp(vP.y*1.4+0.15,0.0,1.0); gl_FragColor = vec4(mix(bottom, top, h),1.0); }',
+      fragmentShader: `uniform vec3 top; uniform vec3 bottom; uniform sampler2D tSky; uniform float uPhoto, uNight, uDusk, uCloudy; varying vec3 vP;
+        void main(){
+          vec3 d = normalize(vP);
+          float h = clamp(d.y*1.4+0.15,0.0,1.0);
+          vec3 grad = mix(bottom, top, h);
+          vec2 uv = vec2(atan(d.z, d.x) / 6.2831853 + 0.5, asin(clamp(max(d.y, 0.02), -1.0, 1.0)) / 3.1415927 + 0.5);
+          vec3 ph = pow(texture2D(tSky, uv).rgb, vec3(2.2));
+          ph = mix(ph, vec3(dot(ph, vec3(0.3, 0.59, 0.11))) * 0.9, uCloudy * 0.8);
+          ph *= mix(vec3(1.0), vec3(1.25, 0.8, 0.6), uDusk * 0.7);
+          vec3 col = mix(grad, ph * 1.05, uPhoto * (1.0 - uNight));
+          col = mix(col, grad, smoothstep(0.15, -0.05, d.y) * 0.8);
+          gl_FragColor = vec4(pow(col, vec3(1.0/2.2)) * (1.0 - 0.0) , 1.0);
+          gl_FragColor.rgb = mix(gl_FragColor.rgb, grad, uNight);
+        }`,
     });
+    if (this.world.settings.environment === 'futuristic' || this.world.settings.environment === 'fantasy') this.skyMat.uniforms.uPhoto.value = 0.35;
     this.sky = new THREE.Mesh(skyGeo, this.skyMat);
     this.sky.renderOrder = -10;
     this.scene.add(this.sky);
@@ -194,6 +229,12 @@ export class WorldView {
     const bot = botDay.clone().lerp(botNight, night).lerp(duskC, dusk * 0.6);
     this.skyMat.uniforms.top.value.copy(top);
     this.skyMat.uniforms.bottom.value.copy(bot);
+    this.skyMat.uniforms.uNight.value = night;
+    this.skyMat.uniforms.uDusk.value = dusk;
+    this.skyMat.uniforms.uCloudy.value = cloudy ? 1 : 0;
+    // Éclairage d'ambiance par l'image du ciel (IBL) : fort le jour, presque nul la nuit.
+    if (this.scene.environment) this.scene.environmentIntensity = (0.12 + (1 - night) * 0.75) * (cloudy ? 0.7 : 1);
+    this.hemi.intensity = this.scene.environment ? 0.15 + (1 - night) * 0.35 : this.hemi.intensity;
     this.scene.fog.color.copy(bot);
     this.scene.fog.near = cloudy ? 50 : 90;
     this.scene.fog.far = cloudy ? 220 : 340;
@@ -203,6 +244,8 @@ export class WorldView {
     this.sky.position.set(camTarget.x, 0, camTarget.z);
     if (this.station) this.station.rotation.z += 0.001;
     this.nightFactor = night;
+    this.grass?.update(camTarget);
+    updateNature(performance.now() / 1000);
     // Lumières nocturnes : les lampes les plus proches de la caméra s'allument.
     if (night > 0.3 || this.viewInterior) this.updatePointLights(camTarget, night);
     else for (const p of this.pointLights) p.intensity = 0;
@@ -232,47 +275,44 @@ export class WorldView {
   buildTerrain() {
     const w = this.world;
     if (this.terrain) { this.root.remove(this.terrain); this.terrain.geometry.dispose(); }
-    const px = 8;
-    const c = document.createElement('canvas');
-    c.width = w.w * px; c.height = w.h * px;
-    const g = c.getContext('2d');
     const env = w.settings.environment;
-    const grass = env === 'futuristic' ? '#7f8f86' : env === 'fantasy' ? '#4f9a5c' : env === 'tropical' ? '#7cc061' : '#6aa84f';
+    // Masque des types de sol (4 px par case, filtré : bords adoucis de 25 cm) :
+    // R = trottoir / allée, G = terre ou sable, B = route ; l'herbe est le reste.
+    const mp = 4, mc = document.createElement('canvas');
+    mc.width = w.w * mp; mc.height = w.h * mp;
+    const mg = mc.getContext('2d');
+    mg.fillStyle = '#000'; mg.fillRect(0, 0, mc.width, mc.height);
+    const MASK = ['#000000', '#ff0000', '#00ff00', '#0000ff', '#00ff00'];
     for (let y = 0; y < w.h; y++) for (let x = 0; x < w.w; x++) {
       const t = w.terrainAt(x, y);
-      let col = t === 0 ? grass : TERRAIN_COLORS[t];
-      const base = new THREE.Color(col);
-      const n = ((x * 928371 + y * 123457) % 97) / 97;
-      if (t === 0) base.offsetHSL(0, 0, (n - 0.5) * 0.025);
-      g.fillStyle = `#${base.getHexString()}`;
-      g.fillRect(x * px, y * px, px, px);
-      if (t === 1) { g.strokeStyle = 'rgba(0,0,0,0.08)'; g.strokeRect(x * px + 0.5, y * px + 0.5, px - 1, px - 1); }
-      if (t === 0 && n > 0.8) { g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(x * px + 2, y * px + 3, 1, 2); }
+      if (t) { mg.fillStyle = MASK[t]; mg.fillRect(x * mp, y * mp, mp, mp); }
     }
-    // Marquage routier : ligne centrale pointillée.
-    g.fillStyle = '#f2e9b5';
+    const mask = new THREE.CanvasTexture(mc);
+    mask.magFilter = THREE.LinearFilter; mask.minFilter = THREE.LinearFilter; mask.generateMipmaps = false;
+    // Marquage routier (8 px par case) : ligne centrale pointillée, bandes de rive, passages piétons.
+    const px = 8, c = document.createElement('canvas');
+    c.width = w.w * px; c.height = w.h * px;
+    const g = c.getContext('2d');
     const rx = w.d.map.roadsX || [], ry = w.d.map.roadsY || [];
+    g.fillStyle = 'rgba(240,226,160,0.95)';
     for (const r of rx) for (let y = 0; y < w.h; y++) if (y % 3 && !ry.some(q => y >= q && y < q + 4)) g.fillRect((r + 2) * px - 1, y * px, 2, px);
     for (const r of ry) for (let x = 0; x < w.w; x++) if (x % 3 && !rx.some(q => x >= q && x < q + 4)) g.fillRect(x * px, (r + 2) * px - 1, px, 2);
-    // Passages piétons aux intersections.
-    g.fillStyle = 'rgba(255,255,255,0.75)';
-    for (const r of rx) for (const q of ry) for (let k = 0; k < 4; k++) { g.fillRect((r + k) * px + 1, (q - 1) * px + 1, px - 2, px - 2); g.fillRect((r - 1) * px + 1, (q + k) * px + 1, px - 2, px - 2); }
-    // Limites des terrains (lots).
-    for (const lot of w.d.lots) {
-      g.strokeStyle = lot.type === 'community' ? 'rgba(255,215,64,0.35)' : lot.forSale ? 'rgba(255,255,255,0.35)' : 'rgba(255,255,255,0.18)';
-      g.setLineDash([6, 4]); g.lineWidth = 2;
-      g.strokeRect(lot.x * px + 1, lot.y * px + 1, lot.w * px - 2, lot.h * px - 2);
-      g.setLineDash([]);
+    g.fillStyle = 'rgba(235,235,235,0.85)';
+    for (const r of rx) for (let y = 0; y < w.h; y++) if (!ry.some(q => y >= q - 1 && y < q + 5)) { g.fillRect(r * px + 1, y * px, 1, px); g.fillRect((r + 4) * px - 2, y * px, 1, px); }
+    for (const r of ry) for (let x = 0; x < w.w; x++) if (!rx.some(q => x >= q - 1 && x < q + 5)) { g.fillRect(x * px, r * px + 1, px, 1); g.fillRect(x * px, (r + 4) * px - 2, px, 1); }
+    for (const r of rx) for (const q of ry) for (let k = 0; k < 4; k++) for (let st = 0; st < 3; st++) {
+      g.fillRect((r + k) * px + st * 3 + 1, (q - 1) * px + 1, 2, px - 2);
+      g.fillRect((r - 1) * px + 1, (q + k) * px + st * 3 + 1, px - 2, 2);
     }
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 8;
-    tex.magFilter = THREE.LinearFilter;
     this.terrainTex = tex;
     const geo = new THREE.PlaneGeometry(w.w, w.h);
     geo.rotateX(-Math.PI / 2);
     geo.translate(w.w / 2, 0, w.h / 2);
-    this.terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 }));
+    const tint = env === 'futuristic' ? '#c9d6cf' : env === 'fantasy' ? '#d8ffd0' : env === 'tropical' ? '#f0ffe0' : '#ffffff';
+    this.terrain = new THREE.Mesh(geo, terrainMaterial(mask, tex, [w.w, w.h], { tint }));
     this.terrain.receiveShadow = true;
     this.terrain.name = 'terrain';
     this.root.add(this.terrain);
@@ -280,7 +320,7 @@ export class WorldView {
     if (!this.outer) {
       const og = new THREE.PlaneGeometry(1400, 1400); og.rotateX(-Math.PI / 2); og.translate(w.w / 2, -0.05, w.h / 2);
       const water = env === 'tropical';
-      this.outer = new THREE.Mesh(og, new THREE.MeshStandardMaterial({ color: water ? '#2f86c9' : grass, roughness: water ? 0.25 : 1, metalness: water ? 0.1 : 0 }));
+      this.outer = new THREE.Mesh(og, water ? new THREE.MeshStandardMaterial({ color: '#2f86c9', roughness: 0.25, metalness: 0.1 }) : terrainMaterial(null, null, [1, 1], { allGrass: true }));
       this.outer.receiveShadow = true;
       this.root.add(this.outer);
     }
