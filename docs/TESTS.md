@@ -21,6 +21,11 @@
 - **animals** : les 11 espèces d'un monde généré (Rocketbox + renard), animation procédurale des pattes/tête/queue.
 - **sit** / **scale** : hauteur d'assise des humains réalistes sur une chaise, proportions plan de cuisson / humain.
 - **horse** : vérification d'une espèce isolée.
+- **walk** : le bassin d'un Sim qui marche ne recule jamais (correction des saccades) — 0 recul sur 169 mesures.
+- **use** : un Sim utilise chaque objet seul sur un terrain (toilettes, bureau, lit, canapé, chaise, baignoire, piano).
+- **liecheck** : au lit, la tête est du côté de la tête de lit.
+- **perf** : appels de dessin et triangles (carte 64 / 128).
+- Test Node **orient.test.mjs** : orientation de tous les objets utilisables dans les 4 rotations.
 - **play** : clic sur le frigo → menu radial → action dans la file ; menu social ; boule de feu ; vol ; pièce construite par glisser ; canapé acheté ; contrôle direct au clavier.
 - **gamepad** : manette simulée via la passerelle Android (`NativePad`) et via l’API Gamepad standard : navigation des menus (croix, A, B), curseur au stick, vitesse (RB), contrôle direct (Y), déplacement au stick, interaction (A), sortie (B), pause (Menu).
 - **panels** : mods, journal, créatif, monde, relations, pouvoirs, nuit tropicale, affichage mobile 844×390.
