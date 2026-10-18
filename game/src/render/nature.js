@@ -159,7 +159,7 @@ export class GrassField {
     this.ready = false;
     Promise.all([loadGLB('nature-real/grass_clump'), loadGLB('nature-real/flower_white'), loadGLB('nature-real/flower_yellow'), loadGLB('nature-real/flower_blue')]).then(([g, ...flowers]) => {
       const src = g.scene.getObjectByProperty('isMesh', true);
-      const mat = new THREE.MeshStandardMaterial({ map: src.material.map, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1, color: new THREE.Color('#9fb87a') });
+      const mat = new THREE.MeshStandardMaterial({ map: src.material.map, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1, color: new THREE.Color('#c4e39a') });
       mat.onBeforeCompile = sh => {
         sh.uniforms.uTime = { value: 0 };
         grassShader = sh;

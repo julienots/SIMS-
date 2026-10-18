@@ -99,13 +99,13 @@ export const OBJECTS = [
   { id: 'nightstand', name: 'Table de chevet', cat: 'chambre', price: 90, model: 'furniture-real/nightstand', fit: true, top: 0.51, size: [1, 1], aff: [], surface: true, decor: 1 },
   { id: 'crib', name: 'Berceau', cat: 'chambre', price: 400, model: 'proc:crib', size: [1, 1], aff: ['tend_baby'], decor: 1 },
   // --- Salle de bain
-  { id: 'toilet', name: 'Toilettes', cat: 'sdb', price: 300, model: 'furniture-real/toilet', fit: true, size: [1, 1], aff: ['toilet'], seats: [[0, 0.05]], decor: 0 },
+  { id: 'toilet', name: 'Toilettes', cat: 'sdb', price: 300, model: 'furniture-real/toilet', fit: true, size: [1, 1], aff: ['toilet'], seats: [[0, 0.12]], decor: 0 },
   { id: 'shower', name: 'Cabine de douche', cat: 'sdb', price: 650, model: 'proc:shower', size: [1, 1], aff: ['shower'], stand: [0, 0], inside: true, decor: 1 },
   { id: 'bathtub', name: 'Baignoire', cat: 'sdb', price: 900, model: 'proc:bathtub', size: [2, 1], aff: ['bath'], beds: [[0, 0]], poseY: 0.02, decor: 2 },
   { id: 'sink_bath', name: 'Lavabo', cat: 'sdb', price: 250, model: 'furniture-real/bath_sink', fit: true, size: [1, 1], aff: ['wash_hands', 'drink'], decor: 1 },
   { id: 'towels', name: 'Porte-serviettes', cat: 'sdb', price: 60, model: 'kitchen/towelrail', scale: 0.55, size: [1, 1], aff: [], wall: true, noCollide: true, decor: 1 },
   // --- Bureau
-  { id: 'computer_desk', name: 'Bureau avec ordinateur', cat: 'bureau', price: 1100, model: 'furniture-real/computer_desk', fit: true, size: [1, 1], aff: ['use_computer', 'play_games', 'work_from_home'], seats: [[0, 0.75]], decor: 1, seatInFront: true },
+  { id: 'computer_desk', name: 'Bureau avec ordinateur', cat: 'bureau', price: 1100, model: 'furniture-real/computer_desk', fit: true, size: [1, 1], aff: ['use_computer', 'play_games', 'work_from_home'], seats: [[0, 0.27]], decor: 1, seatInFront: true },
   { id: 'desk', name: 'Table de travail', cat: 'bureau', price: 260, model: 'furniture-real/desk', fit: true, top: 0.73, size: [1, 1], aff: [], surface: true, decor: 1 },
   // --- Loisirs
   { id: 'easel', name: 'Chevalet', cat: 'loisirs', price: 350, model: 'proc:easel', size: [1, 1], aff: ['paint'], decor: 1 },

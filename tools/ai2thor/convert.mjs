@@ -230,7 +230,7 @@ async function addPart(out, root, part, item, built) {
     }
   }
   content.setRotation(quatY(part.rotY || 0));
-  if (part.scale) content.setScale([part.scale, part.scale, part.scale]);
+  if (part.scale) content.setScale(Array.isArray(part.scale) ? part.scale : [part.scale, part.scale, part.scale]);
   const b = getBounds(content);
   content.setTranslation([-(b.min[0] + b.max[0]) / 2, -b.min[1], -(b.min[2] + b.max[2]) / 2]);
   const [px, py, pz] = part.pos || [0, 0, 0];

@@ -155,7 +155,12 @@
   "id": "computer_desk",
   "parts": [
    {
-    "prefab": "Desk_303_1"
+    "prefab": "Desk_303_1",
+    "scale": [
+     1,
+     1.25,
+     1
+    ]
    },
    {
     "prefab": "Laptop_1",

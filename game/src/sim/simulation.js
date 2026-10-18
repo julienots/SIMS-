@@ -539,7 +539,8 @@ export class Simulation extends Emitter {
       pts.push({ x: p.x, y: p.y, rot: face + rotOff, pose, ax: Math.floor(ap.x), ay: Math.floor(ap.y), key: `${o.id}:${lx}:${lz}` });
     };
     if (aff.pose === 'sit' && def.seats) def.seats.forEach(st => {
-      if (Array.isArray(st)) mk(st[0], st[1], 'sit', def.seatInFront ? st[1] + 0.8 : halfD + 0.5);
+      // Siège devant l'objet (bureau, piano…) : le Sim est tourné vers l'objet, donc dos à la face avant.
+      if (Array.isArray(st)) mk(st[0], st[1], 'sit', def.seatInFront ? st[1] + 0.8 : halfD + 0.5, def.seatInFront ? Math.PI : 0);
       else mk(st.x, st.z, 'sit', st.az ?? st.z, st.r || 0, st.ax ?? st.x);
     });
     else if (aff.pose === 'lie' && def.beds) def.beds.forEach(([lx, lz]) => mk(lx, lz, 'lie', halfD + 0.5, def.size[0] > def.size[1] ? Math.PI / 2 : 0));
