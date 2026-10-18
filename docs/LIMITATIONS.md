@@ -10,8 +10,11 @@
 - Bébés et ados : pas de modèle dédié (ados = adultes réduits, bébés = enfants réduits dans le berceau).
 - Visages non déformables (nez, bouche) ; la morphologie agit sur la taille, la corpulence, les épaules, la tête, les bras et
   les jambes. Accessoires 3D (chapeaux, lunettes…) placés approximativement sur les os des corps réalistes.
-- **Meubles** : toujours KayKit (stylisés) ou procéduraux ; les plans de travail, tables, bureau et commode sont étirés en
-  hauteur pour l'échelle humaine. Aucun pack de meubles réalistes accessible depuis le réseau de développement.
+- **Meubles réalistes AI2-THOR** pour l'essentiel de la maison ; restent procéduraux : douche, baignoire, chaîne hi-fi,
+  chevalet, instruments, sport, arcade, barbecue, potager, berceau. Certains meubles plus larges que leur emprise sont
+  resserrés en largeur (canapé 2,8 m → 2 m). L'ordinateur portable AI2-THOR est fermé.
+- **Sol et nature** : herbe photo + touffes 3D autour de la caméra (rayon 18 à 26 m) ; bitume et dalles sont des textures
+  générées (bruit), pas des photos. Les arbres sont générés au chargement (quelques secondes sur mobile).
 - Animaux Rocketbox animés en procédural (pas de capture de mouvement animale) ; le renard Khronos garde ses animations.
 - Objets sans asset libre (toilettes, douche, TV, instruments…) : modèles procéduraux simples.
 - Un étage supplémentaire au maximum (RDC + 1).

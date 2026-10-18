@@ -1,7 +1,7 @@
 // Point d'entrée : écran du studio, menu principal, création d'univers, chargement, crédits.
 import { Game } from './game.js';
 import { Input } from './engine/input.js';
-import { h, btn, openModal, toast, loading, confirmBox, promptBox, focusFirst, usingPadRef } from './ui/dom.js';
+import { h, btn, openModal, toast, loading, confirmBox, promptBox, focusFirst, usingPadRef, startIconObserver } from './ui/dom.js';
 import { Hud } from './ui/hud.js';
 import { Panels } from './ui/panels.js';
 import { BuildMode } from './ui/build.js';
@@ -16,6 +16,7 @@ import { GAME_VERSION } from './mods/validate.js';
 
 class App {
   constructor() {
+    startIconObserver(document.body);
     this.settings = loadSettings();
     audioSettings.sfx = this.settings.sfx ?? 0.5;
     audioSettings.music = this.settings.music ?? 0.25;
@@ -168,6 +169,10 @@ class App {
         h('h3', {}, 'Modèles 3D (licence CC0 sauf mention)'),
         h('ul', {}, ...[
           'Humains réalistes, animations de capture de mouvement et animaux : Microsoft Rocketbox Avatar Library — Copyright (c) Microsoft Corporation, licence MIT (github.com/microsoft/Microsoft-Rocketbox)',
+          'Meubles réalistes : AI2-THOR, Allen Institute for AI — licence Apache 2.0 (github.com/allenai/ai2thor)',
+          'Arbres, herbe 3D et fleurs : ez-tree par Daniel Greenheck — licence MIT ; écorces Poly Haven et TextureCan (CC0)',
+          'Texture d’herbe « dark grass » (OpenGameArt) — CC-BY 3.0 ; ciel « Spruit Sunrise » par Greg Zaal (Poly Haven) — CC0',
+          'Icônes : Lucide (lucide.dev) — licence ISC',
           'Personnages cartoon, animations, meubles, cuisine, ville, base spatiale : KayKit par Kay Lousberg (kaylousberg.com) — CC0',
           'Arbres et fontaine : Kenney (kenney.nl), Starter Kit City Builder — CC0',
           'Renard animé : modèle de PixelMannen (CC0), rig et animations de @tomkranis (CC BY 4.0), conversion glTF par @AsoboStudio et @scurest (CC BY 4.0) — Khronos glTF Sample Assets',

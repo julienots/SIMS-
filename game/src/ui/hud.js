@@ -32,16 +32,14 @@ export class Hud {
   build() {
     const g = this.game;
     this.topLeft = h('div', { class: 'hud-top-left' });
+    // Barre des modes à la Sims : Vivre / Acheter / Construire, puis un menu qui regroupe le reste.
     this.topRight = h('div', { class: 'hud-top-right' },
-      btn('🏠', () => g.setMode('live'), 'icon', { title: 'Mode Vie (F1)', id: 'm-live' }),
-      btn('🛒', () => g.setMode('buy'), 'icon', { title: 'Mode Achat (F2)', id: 'm-buy' }),
-      btn('🔨', () => g.setMode('build'), 'icon', { title: 'Mode Construction (F3)', id: 'm-build' }),
-      btn('👤', () => g.ui.cas.open({ mode: 'new' }), 'icon', { title: 'Créer un habitant' }),
-      btn('🗺️', () => g.ui.panels.worldPanel(), 'icon', { title: 'Monde et quartiers (F4)' }),
-      btn('📜', () => g.ui.panels.journal(), 'icon', { title: 'Journal du monde (J)' }),
-      btn('✨', () => g.ui.panels.creative(), 'icon', { title: 'Mode créatif total' }),
-      btn('🧩', () => g.ui.mods.manager(), 'icon', { title: 'Gestionnaire de mods' }),
-      btn('☰', () => g.ui.panels.pauseMenu(), 'icon', { title: 'Menu (Échap)' }),
+      h('div', { class: 'mode-switch panel' },
+        btn('🏠', () => g.setMode('live'), 'icon', { title: 'Vivre (F1)', id: 'm-live' }),
+        btn('🛒', () => g.setMode('buy'), 'icon', { title: 'Acheter (F2)', id: 'm-buy' }),
+        btn('🔨', () => g.setMode('build'), 'icon', { title: 'Construire (F3)', id: 'm-build' })),
+      btn('👁️', () => this.toggleMinimal(), 'icon ghost', { title: 'Interface minimale (H)', id: 'm-min' }),
+      btn('☰', e => this.openMainMenu(e.currentTarget), 'icon', { title: 'Menu (Échap)' }),
     );
     this.bottomLeft = h('div', { class: 'hud-bottom-left' });
     this.bottomRight = h('div', { class: 'hud-bottom-right' });
@@ -49,6 +47,33 @@ export class Hud {
     this.hoverLabel = h('div', { class: 'panel hover-label hidden' });
     this.root.append(this.topLeft, this.topRight, this.bottomLeft, this.bottomRight, this.padHelp, this.hoverLabel);
     this.refresh();
+  }
+
+  // Menu déroulant : toutes les fenêtres secondaires, pour garder l'écran dégagé.
+  openMainMenu(anchor) {
+    const g = this.game;
+    document.querySelector('.main-dropdown')?.remove();
+    const items = [
+      ['👤', 'Créer un habitant', () => g.ui.cas.open({ mode: 'new' })],
+      ['🗺️', 'Monde et quartiers (F4)', () => g.ui.panels.worldPanel()],
+      ['📜', 'Journal du monde (J)', () => g.ui.panels.journal()],
+      ['✨', 'Mode créatif total', () => g.ui.panels.creative()],
+      ['🧩', 'Mods', () => g.ui.mods.manager()],
+      ['⚙️', 'Options et sauvegarde (Échap)', () => g.ui.panels.pauseMenu()],
+    ];
+    const menu = h('div', { class: 'panel main-dropdown', dataset: { scope: '1' } }, ...items.map(([ic, label, fn]) => btn(`${ic} ${label}`, () => { menu.remove(); fn(); }, 'ghost menu-item')));
+    const r = anchor.getBoundingClientRect();
+    menu.style.top = `${r.bottom + 6}px`; menu.style.right = `${Math.max(8, window.innerWidth - r.right)}px`;
+    document.getElementById('ui').appendChild(menu);
+    const off = e => { if (!menu.contains(e.target) && e.target !== anchor) { menu.remove(); document.removeEventListener('pointerdown', off, true); } };
+    setTimeout(() => document.addEventListener('pointerdown', off, true), 0);
+  }
+
+  // Interface minimale : seuls l'heure, la vitesse et les modes restent affichés.
+  toggleMinimal(force) {
+    this.minimal = force ?? !this.minimal;
+    this.root?.classList.toggle('hud-min', this.minimal);
+    this.root?.querySelector('#m-min')?.classList.toggle('active', this.minimal);
   }
 
   // ------------------------------------------------------------------ rendu complet
@@ -99,12 +124,13 @@ export class Hud {
     this.fundsEl = h('div', { class: 'funds' }, formatMoney(hh?.funds ?? 0));
     const wm = WALL_MODES.find(m => m[0] === g.worldView?.wallMode) || WALL_MODES[1];
     this.bottomRight.append(
-      h('div', { class: 'panel row', style: { padding: '6px', gap: '6px' } },
-        btn(wm[1], () => this.cycleWallMode(), 'icon small', { title: `${wm[2]} (V)` }),
-        btn(`${g.viewLevel === 0 ? 'RDC' : 'É' + g.viewLevel}`, () => g.setViewLevel(g.viewLevel === 0 ? 1 : 0), 'small', { title: 'Changer d’étage (PgUp/PgDn)' }),
-        btn(CAM_MODES[g.rig.mode]?.icon || '🎥', () => this.cycleCamera(), 'icon small', { title: CAM_MODES[g.rig.mode]?.name }),
-        btn('🕹️', () => g.toggleDirectControl(), `icon small ${g.controlledSim ? 'active' : ''}`, { title: 'Contrôle direct (C / Y)' }),
-        h('span', { class: 'muted', style: { fontSize: '11px' } }, this.W.d.weather ? weatherIcon(this.W.d.weather.type) : '')),
+      h('div', { class: `panel row view-tools ${this.toolsOpen ? 'open' : ''}`, style: { padding: '6px', gap: '6px' } },
+        btn('⚙️', () => { this.toolsOpen = !this.toolsOpen; this.refresh(); }, 'icon small ghost', { title: 'Outils de vue' }),
+        btn(wm[1], () => this.cycleWallMode(), 'icon small tool', { title: `${wm[2]} (V)` }),
+        btn(`${g.viewLevel === 0 ? 'RDC' : 'É' + g.viewLevel}`, () => g.setViewLevel(g.viewLevel === 0 ? 1 : 0), 'small tool', { title: 'Changer d’étage (PgUp/PgDn)' }),
+        btn(CAM_MODES[g.rig.mode]?.icon || '🎥', () => this.cycleCamera(), 'icon small tool', { title: CAM_MODES[g.rig.mode]?.name }),
+        btn('🕹️', () => g.toggleDirectControl(), `icon small tool ${g.controlledSim ? 'active' : ''}`, { title: 'Contrôle direct (C / Y)' }),
+        h('span', { class: 'muted tool', style: { fontSize: '11px' } }, this.W.d.weather ? weatherIcon(this.W.d.weather.type) : '')),
       h('div', { class: 'panel timebox' },
         h('div', { class: 'col', style: { gap: '0' } }, this.clockEl, this.dayEl),
         ...[['⏸', 0], ['▶', 1], ['⏩', 2], ['⏭', 3]].map(([ic, i]) => btn(ic, () => { this.S.setSpeed(i); this.refresh(); }, `icon small ${speed === i ? 'active' : ''}`, { title: ['Pause', 'Vitesse normale', 'Rapide', 'Ultra rapide'][i] })),

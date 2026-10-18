@@ -24,7 +24,7 @@ page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') er
 page.on('pageerror', e => errors.push(`[pageerror] ${e.message}\n${e.stack}`));
 await page.goto(`http://localhost:${port}/`);
 const wait = ms => page.waitForTimeout(ms);
-const shot = async name => { await page.screenshot({ path: `${OUT}/${name}.png` }); console.log('capture', name); };
+const shot = async name => { await page.screenshot({ path: `${OUT}/${name}.png`, timeout: 150000 }); console.log('capture', name); };
 const ev = (fn, arg) => page.evaluate(fn, arg);
 try {
   const mod = await import(path.resolve(`tests-browser/scenarios/${scenario}.mjs`));

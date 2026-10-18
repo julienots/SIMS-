@@ -2,6 +2,59 @@
 // navigation à la manette (focus spatial) et sons d'interface.
 import { escapeHtml } from '../core/util.js';
 import { sfx } from '../engine/audio.js';
+import { ICONS, EMOJI_ICONS } from './iconset.js';
+
+// ------------------------------------------------------------------ icônes vectorielles (Lucide, ISC)
+// Les textes du jeu et des mods contiennent des emojis : ils sont affichés comme icônes vectorielles.
+const SVG_HEAD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+export function icon(name, cls = '') {
+  const el = document.createElement('span');
+  el.className = `ic ${cls}`;
+  el.innerHTML = SVG_HEAD + (ICONS[name] || ICONS.circle) + '</svg>';
+  return el;
+}
+const EMO_KEYS = Object.keys(EMOJI_ICONS).map(k => k.replace(/\uFE0F/g, '')).sort((a, b) => b.length - a.length);
+const EMO_RE = new RegExp(`(${EMO_KEYS.map(k => [...k].map(ch => ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\uFE0F?')).join('|')})\uFE0F?`, 'gu');
+const EMO_NORM = new Map(Object.entries(EMOJI_ICONS).map(([k, v]) => [k.replace(/\uFE0F/g, ''), v]));
+const emojiIcon = e => EMO_NORM.get(e.replace(/\uFE0F/g, '')) || 'circle';
+export const hasEmoji = str => { EMO_RE.lastIndex = 0; return EMO_RE.test(str); };
+export function stripEmoji(str) { return String(str).replace(EMO_RE, '').replace(/\s{2,}/g, ' ').trim(); }
+function textWithIcons(str) {
+  EMO_RE.lastIndex = 0;
+  if (!EMO_RE.test(str)) return document.createTextNode(str);
+  const frag = document.createDocumentFragment();
+  let last = 0;
+  EMO_RE.lastIndex = 0;
+  for (const m of str.matchAll(EMO_RE)) {
+    if (m.index > last) frag.appendChild(document.createTextNode(str.slice(last, m.index)));
+    frag.appendChild(icon(emojiIcon(m[0])));
+    last = m.index + m[0].length;
+  }
+  if (last < str.length) frag.appendChild(document.createTextNode(str.slice(last)));
+  return frag;
+}
+// Filet de sécurité : tout texte inséré plus tard dans l'interface (textContent, notifications) est converti.
+function iconifyNode(node) {
+  if (node.nodeType === 3) {
+    const p = node.parentNode;
+    if (!p || p.closest?.('textarea, input, script, style, canvas')) return;
+    if (!hasEmoji(node.data)) return;
+    if (p.tagName === 'OPTION' || p.tagName === 'TITLE') { node.data = stripEmoji(node.data); return; }
+    p.replaceChild(textWithIcons(node.data), node);
+  } else if (node.nodeType === 1 && !node.classList?.contains('ic')) {
+    if (node.tagName === 'OPTION') { node.textContent = stripEmoji(node.textContent); return; }
+    for (const c of [...node.childNodes]) iconifyNode(c);
+  }
+}
+export function startIconObserver(root = document.body) {
+  iconifyNode(root);
+  new MutationObserver(list => {
+    for (const m of list) {
+      if (m.type === 'characterData') iconifyNode(m.target);
+      else for (const n of m.addedNodes) iconifyNode(n);
+    }
+  }).observe(root, { childList: true, subtree: true, characterData: true });
+}
 
 export function h(tag, props = {}, ...children) {
   const el = document.createElement(tag);
@@ -17,7 +70,7 @@ export function h(tag, props = {}, ...children) {
   }
   for (const c of children.flat(Infinity)) {
     if (c === null || c === undefined || c === false) continue;
-    el.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
+    el.appendChild(c instanceof Node ? c : tag === 'option' ? document.createTextNode(stripEmoji(c)) : textWithIcons(String(c)));
   }
   return el;
 }

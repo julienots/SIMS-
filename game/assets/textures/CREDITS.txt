@@ -1,0 +1,3 @@
+grass_photo.jpg : "dark grass", OpenGameArt (http://opengameart.org/content/dark-grass), CC-BY 3.0, via le dépôt three.js (examples/textures/terrain)
+grass_ez.jpg, dirt.jpg : ez-tree (Daniel Greenheck), licence MIT
+sky_spruit_sunrise.jpg : "Spruit Sunrise", Greg Zaal, Poly Haven, CC0, via le dépôt three.js (examples/textures/equirectangular)

@@ -180,3 +180,15 @@ label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 700;
 .body-card { padding: 6px; text-align: center; }
 .body-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; display: block; background: #222; }
 .body-card .title { font-size: 12px; }
+
+/* Icônes vectorielles (Lucide) à la place des emojis */
+.ic { display: inline-flex; width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; }
+.ic svg { width: 100%; height: 100%; }
+
+/* HUD façon Sims : modes groupés, menu déroulant, outils de vue repliés, interface minimale */
+.mode-switch { display: flex; gap: 4px; padding: 4px; border-radius: 16px; }
+.mode-switch .btn { border-radius: 12px; }
+.main-dropdown { position: fixed; z-index: 60; display: flex; flex-direction: column; gap: 2px; padding: 6px; min-width: 240px; }
+.main-dropdown .menu-item { justify-content: flex-start; text-align: left; width: 100%; gap: 10px; }
+.view-tools:not(.open) .tool { display: none; }
+#hud.hud-min .hud-top-left, #hud.hud-min .hud-bottom-left, #hud.hud-min .view-tools, #hud.hud-min .household { display: none !important; }

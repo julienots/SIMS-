@@ -369,6 +369,7 @@ export class Game {
       case 'PageUp': this.setViewLevel(this.viewLevel + 1); break;
       case 'PageDown': this.setViewLevel(this.viewLevel - 1); break;
       case 'KeyV': this.ui.hud?.cycleWallMode(); break;
+      case 'KeyH': this.ui.hud?.toggleMinimal(); break;
       case 'Home': this.ui.hud?.cycleCamera(); break;
       case 'KeyE': if (this.controlledSim) this.directInteract(); break;
     }

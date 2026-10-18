@@ -12,14 +12,16 @@ export default async ({ page, wait, shot, ev }) => {
     for (let i = 0; i < 300 * 20; i++) g.sim.step(0.2);   // 20 heures de vie accélérée
   });
   await wait(3000); await shot('70-tropical');
-  await page.click('button[title="Gestionnaire de mods"]'); await wait(800); await shot('71-mods');
+  // Les fenêtres secondaires sont rangées dans le menu déroulant (HUD épuré façon Sims).
+  const menu = async label => { await page.click('button[title="Menu (Échap)"]'); await wait(400); await page.click(`.main-dropdown button:has-text("${label}")`); };
+  await page.click('button[title="Menu (Échap)"]'); await wait(500); await shot('70b-menu'); await page.click('.main-dropdown button:has-text("Mods")'); await wait(800); await shot('71-mods');
   await page.click('.modal-head .btn'); await wait(300);
-  await page.click('button[title="Journal du monde (J)"]'); await wait(800); await shot('72-journal');
+  await menu('Journal du monde'); await wait(800); await shot('72-journal');
   await page.click('.modal-head .btn'); await wait(300);
-  await page.click('button[title="Mode créatif total"]'); await wait(800); await shot('73-creative');
+  await menu('Mode créatif total'); await wait(800); await shot('73-creative');
   await page.click('.modal .tab:has-text("Événements")'); await wait(400); await shot('74-creative-events');
   await page.click('.modal-head .btn'); await wait(300);
-  await page.click('button[title="Monde et quartiers (F4)"]'); await wait(800); await shot('75-world');
+  await menu('Monde et quartiers'); await wait(800); await shot('75-world');
   await page.click('.modal-head .btn'); await wait(300);
   await page.click('.sim-tabs button[title="Relations"]'); await wait(600); await shot('76-relations');
   await page.click('.sim-tabs button[title="Pouvoirs"]'); await wait(600); await shot('77-powers');

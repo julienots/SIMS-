@@ -7,6 +7,7 @@ import { characterTemplate, cloneCharacter, recoloredTexture, ANIM_MAP, ONE_SHOT
 const BIPED = { head: 'Bip01_Head', chest: 'Bip01_Spine2', spine: 'Bip01_Spine', hips: 'Bip01_Pelvis', handl: 'Bip01_L_Hand', handr: 'Bip01_R_Hand' };
 const LIE = new Set(['lie', 'lie_down', 'lie_up', 'faint']);
 import { mat } from './procmodels.js';
+import { ICONS, EMOJI_ICONS } from '../ui/iconset.js';
 import { LIFE_STAGES } from '../sim/data/core-data.js';
 import { registry } from '../mods/registry.js';
 import { REAL_BODIES } from '../sim/factory.js';
@@ -17,7 +18,9 @@ const WEAPONS = /sword|shield|staff|wand|spellbook|knife|throwable|crossbow|axe|
 const HATS = /helmet|_hat|hood/i;
 const CAPES = /cape/i;
 
+// Bulle de pensée : icône vectorielle (Lucide) correspondant à l'emoji du jeu, dessinée sur une bulle blanche.
 const bubbleCache = new Map();
+const EMO_NORM = new Map(Object.entries(EMOJI_ICONS).map(([k, v]) => [k.replace(/\uFE0F/g, ''), v]));
 function bubbleTexture(icon) {
   if (bubbleCache.has(icon)) return bubbleCache.get(icon);
   const c = document.createElement('canvas');
@@ -27,11 +30,17 @@ function bubbleTexture(icon) {
   g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 4;
   g.beginPath(); g.roundRect(8, 8, 112, 92, 30); g.fill(); g.stroke();
   g.beginPath(); g.moveTo(52, 98); g.lineTo(64, 122); g.lineTo(76, 98); g.fill();
-  g.font = '64px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif';
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText(icon, 64, 56);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  const name = EMO_NORM.get(String(icon).replace(/\uFE0F/g, ''));
+  if (name && ICONS[name]) {
+    const img = new Image();
+    img.onload = () => { g.drawImage(img, 34, 24, 60, 60); t.needsUpdate = true; };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="120" height="120" fill="none" stroke="#2f2a48" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`);
+  } else {
+    g.fillStyle = '#2f2a48'; g.font = 'bold 56px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(String(icon).slice(0, 2), 64, 56);
+  }
   bubbleCache.set(icon, t);
   return t;
 }
@@ -458,6 +467,17 @@ const emojiCache = new Map();
 function emojiTexture(icon) {
   if (emojiCache.has(icon)) return emojiCache.get(icon);
   const c = document.createElement('canvas'); c.width = c.height = 64;
-  const g = c.getContext('2d'); g.font = '52px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(icon, 32, 36);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; emojiCache.set(icon, t); return t;
+  const g = c.getContext('2d');
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; emojiCache.set(icon, t);
+  const name = EMO_NORM.get(String(icon).replace(/\uFE0F/g, ''));
+  if (name && ICONS[name]) {
+    // Effets (cœurs, notes, sommeil…) : icône vectorielle colorée avec un contour sombre.
+    const col = /heart/.test(name) ? '#ff5c93' : /music/.test(name) ? '#7cc8ff' : /moon|bed/.test(name) ? '#a9b8ff' : /angry|flame|bomb/.test(name) ? '#ff6a3d' : '#ffd23f';
+    const svg = (stroke, w) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`);
+    const back = new Image(), front = new Image();
+    back.onload = () => { g.drawImage(back, 6, 6, 52, 52); front.src = svg(col, 2.4); };
+    front.onload = () => { g.drawImage(front, 6, 6, 52, 52); t.needsUpdate = true; };
+    back.src = svg('rgba(20,16,40,0.85)', 4.2);
+  }
+  return t;
 }
