@@ -22,6 +22,9 @@
 - Pas de partage de mods en ligne (fichiers .json à échanger) ; pas d’import de GLB personnels dans les mods.
 - Bébés : immobiles dans leur berceau, deviennent enfants au bout de 2 jours.
 
+- **Circulation** : voitures d'ambiance (affichage seulement : elles ne transportent pas les Sims). Modèles de voitures
+  KayKit (stylisés), faute de voitures réalistes libres accessibles.
+
 ## Étapes suivantes proposées
 1. Tester l’APK sur 2–3 téléphones et une manette Xbox Bluetooth ; ajuster la qualité « auto ».
 2. Remplacer les meubles stylisés par des meubles réalistes (Poly Haven / Kenney Furniture Kit) dès que les fichiers sont fournis.

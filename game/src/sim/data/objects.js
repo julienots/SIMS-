@@ -124,6 +124,8 @@ export const OBJECTS = [
   { id: 'tree', name: 'Arbre', cat: 'jardin', price: 150, model: 'proc:tree', size: [1, 1], aff: ['admire'], decor: 2 },
   { id: 'pine', name: 'Sapin', cat: 'jardin', price: 150, model: 'proc:pine', size: [1, 1], aff: [], decor: 2 },
   { id: 'bush', name: 'Buisson', cat: 'jardin', price: 40, model: 'proc:bush', size: [1, 1], aff: [], decor: 1 },
+  { id: 'fence', name: 'Clôture blanche', cat: 'jardin', price: 35, model: 'proc:fence', size: [1, 1], aff: [], decor: 1, noCollide: true },
+  { id: 'mailbox', name: 'Boîte aux lettres', cat: 'jardin', price: 50, model: 'proc:mailbox', size: [1, 1], aff: [], decor: 1 },
   { id: 'flowers', name: 'Massif de fleurs', cat: 'jardin', price: 60, model: 'proc:flowers', size: [1, 1], aff: ['admire'], decor: 2, noCollide: true },
   { id: 'trees_patch', name: 'Bosquet', cat: 'jardin', price: 300, model: 'nature/grass-trees-tall', scale: 2, size: [2, 2], aff: ['admire'], decor: 3 },
   // --- Décoration
@@ -153,6 +155,8 @@ export const OBJECTS = [
   { id: 'resto_table', name: 'Table de restaurant', cat: 'ville', price: 600, model: 'proc:restotable', size: [2, 2], aff: ['bake_meal_restaurant'],
     seats: [{ x: 0, z: 1.45, r: Math.PI }, { x: 0, z: -1.45, r: 0 }], decor: 2 },
   { id: 'car_sedan', name: 'Berline', cat: 'ville', price: 3500, model: 'city/car_sedan', scale: 4.4, size: [2, 4], aff: [], decor: 2 },
+  { id: 'car_hatchback', name: 'Citadine', cat: 'ville', price: 3000, model: 'city/car_hatchback', scale: 4.4, size: [2, 4], aff: [], decor: 2 },
+  { id: 'car_stationwagon', name: 'Break familial', cat: 'ville', price: 3800, model: 'city/car_stationwagon', scale: 4.4, size: [2, 4], aff: [], decor: 2 },
   { id: 'car_taxi', name: 'Taxi', cat: 'ville', price: 3500, model: 'city/car_taxi', scale: 4.4, size: [2, 4], aff: [], decor: 1 },
   { id: 'hydrant', name: 'Borne incendie', cat: 'ville', price: 80, model: 'city/firehydrant', scale: 4, size: [1, 1], aff: [], decor: 0 },
   { id: 'watertower', name: 'Château d’eau', cat: 'ville', price: 2500, model: 'city/watertower', scale: 7, size: [4, 4], aff: [], decor: 1 },

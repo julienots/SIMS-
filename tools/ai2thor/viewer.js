@@ -21,7 +21,7 @@ for (const name of list) {
   try { m = await load(name); } catch { out[name] = null; continue; }
   scene.add(m);
   const b = new THREE.Box3().setFromObject(m), s = b.getSize(new THREE.Vector3());
-  if (hum && window.VIEW !== 'front') { const h = hum.clone(); h.position.set(b.max.x + 0.45, 0, 0); scene.add(h); b.expandByObject(h); }
+  if (hum && window.VIEW !== 'front' && window.VIEW !== 'nohuman') { const h = hum.clone(); h.position.set(b.max.x + 0.45, 0, 0); scene.add(h); b.expandByObject(h); }
   // Flèche rouge : direction +Z (face avant attendue par le jeu).
   scene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0.03, b.max.z + 0.05), 0.7, 0xff0000, 0.25, 0.18));
   const c = b.getCenter(new THREE.Vector3()), size = b.getSize(new THREE.Vector3()).length();

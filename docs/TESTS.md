@@ -24,6 +24,7 @@
 - **walk** : le bassin d'un Sim qui marche ne recule jamais (correction des saccades) — 0 recul sur 169 mesures.
 - **use** : un Sim utilise chaque objet seul sur un terrain (toilettes, bureau, lit, canapé, chaise, baignoire, piano).
 - **liecheck** : au lit, la tête est du côté de la tête de lit.
+- **aerial** : vue aérienne d'un quartier (routes entre les terrains, jardins, circulation).
 - **perf** : appels de dessin et triangles (carte 64 / 128).
 - Test Node **orient.test.mjs** : orientation de tous les objets utilisables dans les 4 rotations.
 - **play** : clic sur le frigo → menu radial → action dans la file ; menu social ; boule de feu ; vol ; pièce construite par glisser ; canapé acheté ; contrôle direct au clavier.

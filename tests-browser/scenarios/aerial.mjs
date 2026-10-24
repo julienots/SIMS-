@@ -6,7 +6,7 @@ export default async ({ wait, shot, ev, page }) => {
     document.getElementById('splash')?.remove(); window.__app.hideMenu();
     await window.__app.game.startWorld(w);
     const g = window.__app.game, lot = w.d.lots.find(l => w.objectsOnLot(l).length > 20) || w.d.lots[0];
-    g.selected = null; g.rig.setMode('free'); g.rig.focus(lot.x + lot.w / 2, lot.y + lot.h / 2, 46); g.rig.goalPitch = 1.25;
+    g.selected = null; g.rig.setMode('free'); g.rig.focus(lot.x + lot.w / 2, lot.y + lot.h / 2, +(window.__AERIAL_DIST || 46)); g.rig.goalPitch = 1.05;
     window.__lot = lot;
     return { lot: [lot.x, lot.y, lot.w, lot.h], roadsX: w.d.map.roadsX, roadsY: w.d.map.roadsY };
   });

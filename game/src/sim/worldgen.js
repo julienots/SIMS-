@@ -288,6 +288,7 @@ class Generator {
     const pathFrom = lot.front === 'n' ? lot.y : y1;
     const pathTo = lot.front === 'n' ? y0 : lot.y + lot.h;
     for (let y = pathFrom; y < pathTo; y++) w.setTerrain(doorX, y, T.PATH);
+    this.frontYard(lot, { x0, y0, x1, y1 }, doorX);
     this.validateReachability({ x: doorX, y: lot.front === 'n' ? y0 - 1 : y1 }, lot);
     return { x0, y0, x1, y1, doorX };
   }
@@ -308,6 +309,48 @@ class Generator {
       if (c) { const cf = w.footprint(c); for (let yy = cf.y; yy < cf.y + cf.d; yy++) for (let xx = cf.x; xx < cf.x + cf.w; xx++) res.set(`${xx},${yy}`, 'obj'); this.place('rug', cx, facing === 0 ? cy - 1 : cy + 1, 0, 0); return; }
     }
     this.furnish(room, ['couch'], res);
+  }
+
+  // Jardin de devant à la Sims : allée de garage avec voiture, boîte aux lettres, poubelle, clôture blanche,
+  // massifs de fleurs le long de la façade.
+  frontYard(lot, house, doorX) {
+    const w = this.w, rng = this.rng;
+    if (this.env.id === 'futuristic' || this.env.id === 'fantasy') return;
+    const north = lot.front === 'n';
+    const street = north ? lot.y : lot.y + lot.h - 1;       // rangée côté rue
+    const faceRot = north ? 2 : 0;                           // face avant vers la rue
+    const facadeRow = north ? house.y0 - 1 : house.y1;       // rangée juste devant la façade
+    const step = north ? 1 : -1;
+    // Allée de garage (2 cases) sur le côté le plus large, si la place le permet.
+    const right = lot.x + lot.w - house.x1, left = house.x0 - lot.x;
+    let drive = null;
+    if (right >= 3) drive = house.x1 + 1; else if (left >= 3) drive = house.x0 - 3;
+    const driveRows = [];
+    if (drive !== null) {
+      // De la rue jusqu'au milieu du flanc de la maison (6 à 7 cases : la voiture en fait 4).
+      for (let k = 0; k < 7; k++) { const y = street + k * step; if (y < lot.y || y >= lot.y + lot.h) break; driveRows.push(y); }
+      for (const y of driveRows) for (const x of [drive, drive + 1]) w.setTerrain(x, y, T.PATH);
+      if (driveRows.length >= 5 && rng.chance(0.8)) {
+        const carY = north ? street + 1 : street - 4;
+        this.place(rng.pick(['car_sedan', 'car_hatchback', 'car_stationwagon']), drive, carY, rng.chance(0.5) ? 0 : 2, 0);
+      }
+    }
+    const blocked = x => x === doorX || (drive !== null && (x === drive || x === drive + 1));
+    // Boîte aux lettres et poubelle au bord de la rue.
+    this.place('mailbox', doorX + 1 < lot.x + lot.w && !blocked(doorX + 1) ? doorX + 1 : doorX - 1, street, faceRot, 0);
+    if (drive !== null) this.place('trash', drive + 2 < lot.x + lot.w ? drive + 2 : drive - 1, street, faceRot, 0);
+    // Clôture blanche sur la rangée côté rue, ouverte devant l'allée piétonne et le garage.
+    if (this.env.id !== 'tropical' || rng.chance(0.5)) {
+      for (let x = lot.x; x < lot.x + lot.w; x++) {
+        if (blocked(x) || Math.abs(x - doorX) <= 1) continue;
+        if (!w.objectAtTile(0, x, street)) this.place('fence', x, street, faceRot, 0);
+      }
+    }
+    // Massifs de fleurs le long de la façade.
+    for (let x = house.x0; x < house.x1; x++) {
+      if (Math.abs(x - doorX) <= 1 || w.terrainAt(x, facadeRow) === T.PATH) continue;
+      if (rng.chance(0.7)) this.place('flowers', x, facadeRow, faceRot, 0);
+    }
   }
 
   garden(lot, house) {

@@ -135,6 +135,25 @@ export function buildProcModel(kind, def, loadGLB) {
       add(cyl(0.1, 0.14, 0.8, '#6b4423'));
       for (let i = 0; i < 3; i++) { const c = new THREE.Mesh(new THREE.ConeGeometry(0.9 - i * 0.22, 1.2, 10), mat(i % 2 ? '#2f7a3b' : '#276b33')); c.position.y = 1.2 + i * 0.7; c.castShadow = true; add(c); }
       break;
+    case 'fence': {
+      // Clôture blanche à piquets, le long du bord avant de la case.
+      const white = '#f4f1ea';
+      add(box(1.0, 0.07, 0.04, white, 0, 0.28, 0.46), box(1.0, 0.07, 0.04, white, 0, 0.72, 0.46));
+      for (let i = 0; i < 6; i++) {
+        const p = box(0.07, 0.95, 0.025, white, -0.42 + i * 0.168, 0, 0.48);
+        add(p);
+        const tip = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.1, 4), mat(white)); tip.position.set(-0.42 + i * 0.168, 1.0, 0.48); tip.rotation.y = Math.PI / 4; tip.castShadow = true; add(tip);
+      }
+      break;
+    }
+    case 'mailbox': {
+      // Boîte aux lettres américaine sur poteau, drapeau rouge.
+      add(box(0.08, 1.05, 0.08, '#6b4f36', 0, 0, 0), box(0.24, 0.24, 0.48, '#2f3b4a', 0, 1.05, 0.05, { metal: 0.4, rough: 0.4 }));
+      const top = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.48, 16, 1, false, 0, Math.PI), mat('#2f3b4a', { metal: 0.4, rough: 0.4 }));
+      top.rotation.x = Math.PI / 2; top.rotation.z = Math.PI / 2; top.position.set(0, 1.29, 0.05); add(top);
+      add(box(0.02, 0.22, 0.02, '#b8b8b8', 0.13, 1.12, -0.08), box(0.02, 0.09, 0.12, '#d63031', 0.13, 1.26, -0.03));
+      break;
+    }
     case 'flowers':
       for (let i = 0; i < 9; i++) {
         const x = ((i % 3) - 1) * 0.28, z = (Math.floor(i / 3) - 1) * 0.28;

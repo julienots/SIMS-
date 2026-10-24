@@ -7,6 +7,7 @@ import { ANIMALS } from '../sim/data/animals.js';
 import { LEVEL_HEIGHT, LEVELS } from '../sim/world.js';
 import { objectModel, loadGLB } from './assets.js';
 import { terrainMaterial, GrassField, updateNature, skyTexture } from './nature.js';
+import { Traffic } from './traffic.js';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 const WALL_H = LEVEL_HEIGHT, WALL_T = 0.14, LOW_H = 0.3;
@@ -117,11 +118,13 @@ export class WorldView {
     };
     if (tex.image?.complete) apply(); else { const t0 = setInterval(() => { if (tex.image?.complete || this.disposed) { clearInterval(t0); apply(); } }, 200); }
     if (this.quality.grass !== false) this.grass = new GrassField(this.root, this.world, this.quality);
+    this.traffic = new Traffic(this.root, this.world, this.sim, this.quality);
   }
 
   dispose() {
     this.disposed = true;
     this.grass?.dispose();
+    this.traffic?.dispose();
     if (this.scene.environment === this.envRT?.texture) this.scene.environment = null;
     this.envRT?.dispose();
     this.unsub.forEach(u => u());
@@ -593,6 +596,7 @@ export class WorldView {
 
   // ---------------------------------------------------------------- créatures d'ambiance
   async syncCritters(dt) {
+    this.traffic?.update(dt);
     const list = this.world.d.critters || [];
     for (const c of list) {
       let v = this.critterViews.get(c.id);
