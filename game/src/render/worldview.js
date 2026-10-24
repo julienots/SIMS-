@@ -288,6 +288,9 @@ export class WorldView {
       if (t) { mg.fillStyle = MASK[t]; mg.fillRect(x * mp, y * mp, mp, mp); }
     }
     const mask = new THREE.CanvasTexture(mc);
+    // Le shader lit le masque en coordonnées monde (x, z) / taille : la ligne y du canvas doit être la case y,
+    // donc pas de retournement vertical (sinon routes et trottoirs s'affichent en miroir, sur les maisons).
+    mask.flipY = false;
     mask.magFilter = THREE.LinearFilter; mask.minFilter = THREE.LinearFilter; mask.generateMipmaps = false;
     // Marquage routier (8 px par case) : ligne centrale pointillée, bandes de rive, passages piétons.
     const px = 8, c = document.createElement('canvas');
@@ -305,6 +308,7 @@ export class WorldView {
       g.fillRect((r - 1) * px + 1, (q + k) * px + st * 3 + 1, px - 2, 2);
     }
     const tex = new THREE.CanvasTexture(c);
+    tex.flipY = false;
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 8;
     this.terrainTex = tex;
