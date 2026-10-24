@@ -481,8 +481,27 @@ export class Simulation extends Emitter {
     if (f) { s.pos.x = f.x + 0.5; s.pos.y = f.y + 0.5; s.pos.l = f.l; s.pos.hz = f.l * LEVEL_HEIGHT; }
   }
 
+  // Sim arrêté sur une case occupée (fin de glissement interrompue en sortant d'un lit, d'un fauteuil…) :
+  // on le replace au centre de la case libre la plus proche, sans traverser de mur.
+  unstick(s) {
+    const l = s.pos.l, sx = Math.floor(s.pos.x), sy = Math.floor(s.pos.y);
+    if (this.nav.passable(l, sx, sy, 'walk')) return false;
+    let best = null, bd = Infinity;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const x = sx + dx, y = sy + dy;
+      if (!this.nav.passable(l, x, y, 'walk')) continue;
+      if (Math.abs(dx) + Math.abs(dy) === 1 && this.world.blockedEdge(l, sx, sy, x, y)) continue;
+      const d = Math.hypot(x + 0.5 - s.pos.x, y + 0.5 - s.pos.y);
+      if (d < bd) { bd = d; best = { x, y }; }
+    }
+    if (!best) return false;
+    s.pos.x = best.x + 0.5; s.pos.y = best.y + 0.5;
+    return true;
+  }
+
   rescue(s) {
     const w = this.world;
+    if (this.unstick(s)) return;
     const sx = Math.floor(s.pos.x), sy = Math.floor(s.pos.y);
     // Taille de la zone accessible autour du sim.
     const seen = new Set([`${sx},${sy}`]);
@@ -634,6 +653,7 @@ export class Simulation extends Emitter {
         const back = { x: a.pt.ax + 0.5, y: a.pt.ay + 0.5 };
         if (a.exitT > (a.pt.pose === 'stand' ? 0.1 : 0.8)) {
           if (this.slideTo(s, back.x, back.y, undefined, dt) || a.exitT > 2.5) {
+            if (a.exitT > 2.5) this.unstick(s);
             if (a.done && !a.cancelled) this.completeObject(s, a, o, aff);
             this.finish(s, a, !a.done || a.cancelled);
           }
@@ -963,6 +983,7 @@ export class Simulation extends Emitter {
     if ((s._rt.failStreak || 0) >= 3) {
       s._rt.rescues = (s._rt.rescues || 0) + 1;
       s._rt.failStreak = 0;
+      this.unstick(s);
       // Plusieurs échecs d'affilée : le sim est peut-être enfermé ; on le replace sur un trottoir accessible.
       if (s._rt.rescues >= 2) { this.rescue(s); s._rt.rescues = 0; }
       return { kind: 'wander', name: 'Se promener', icon: '🚶' };

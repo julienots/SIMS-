@@ -62,7 +62,9 @@ test('SUPERPOWERS : activation, pouvoirs utilisés, désactivation sans perte de
   sim.powers.grant(tp, 'sp_teleport');
   tp.modData.powers.energy = 100;
   const before = { x: tp.pos.x, y: tp.pos.y };
-  const target = sim.nav.nearestFree(0, 30, 30, 10);
+  // Destination à bonne distance du Sim (sinon le test échoue s'il se trouve déjà près du point visé).
+  const tx = tp.pos.x < w.w / 2 ? Math.floor(tp.pos.x) + 15 : Math.floor(tp.pos.x) - 15;
+  const target = sim.nav.nearestFree(0, tx, Math.floor(tp.pos.y), 10);
   sim.dropAll(tp);
   sim.enqueue(tp, { kind: 'power', power: 'sp_teleport', point: { x: target.x, y: target.y, l: 0 } }, true);
   for (let i = 0; i < 15; i++) sim.step(0.2);
