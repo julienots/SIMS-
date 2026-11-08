@@ -24,6 +24,8 @@
 - **walk** : le bassin d'un Sim qui marche ne recule jamais (correction des saccades) — 0 recul sur 169 mesures.
 - **use** : un Sim utilise chaque objet seul sur un terrain (toilettes, bureau, lit, canapé, chaise, baignoire, piano).
 - **liecheck** : au lit, la tête est du côté de la tête de lit.
+- **mobile** (avec `MOBILE=1` : téléphone en paysage 844×390, tactile) : partie, question d'un Sim, file d'actions, besoins,
+  envies, menu radial, menu, achat, construction, créateur de personnage — rien ne se chevauche.
 - **aerial** : vue aérienne d'un quartier (routes entre les terrains, jardins, circulation).
 - **perf** : appels de dessin et triangles (carte 64 / 128).
 - Tests Node **wants.test.mjs** (envies réalisées en autonomie, boutique, trait permanent), **family.test.mjs** (grossesse

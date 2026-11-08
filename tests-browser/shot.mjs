@@ -18,7 +18,10 @@ const server = http.createServer((req, res) => {
 const port = server.address().port;
 const scenario = process.argv[2] || 'menu';
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+// MOBILE=1 : téléphone en paysage (844×390, tactile, densité 3) au lieu d'un écran de PC.
+const page = await browser.newPage(process.env.MOBILE
+  ? { viewport: { width: 844, height: 390 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Mobile Safari/537.36' }
+  : { viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') errors.push(`[${m.type()}] ${m.text()}`); });
 page.on('pageerror', e => errors.push(`[pageerror] ${e.message}\n${e.stack}`));

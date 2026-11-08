@@ -207,3 +207,88 @@ label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 700;
 /* Leçons de démarrage */
 .lesson { position: fixed; top: 74px; left: 50%; transform: translateX(-50%); width: min(460px, calc(100vw - 32px)); z-index: 40; padding: 12px 14px; animation: lessonIn .35s ease; }
 @keyframes lessonIn { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* ================= Téléphone (écran compact, surtout en paysage) ================= */
+/* Une seule chose à la fois, des éléments plus petits, des panneaux en volet latéral qui défilent. */
+body.compact .sim-card { padding: 6px 8px; gap: 8px; }
+body.compact .sim-card .portrait { width: 40px !important; height: 40px !important; }
+body.compact .sim-card .name { font-size: 14px; }
+body.compact .sim-card .bar { width: 110px !important; }
+body.compact .sim-card .col { min-width: 110px !important; }
+body.compact .sim-tabs { display: grid; grid-template-columns: repeat(4, auto); gap: 4px; }
+body.compact .sim-tabs .btn.icon { width: 32px; height: 32px; min-height: 32px; padding: 0; font-size: 15px; }
+body.compact .want-bubble { width: 30px; height: 30px; font-size: 14px; }
+body.compact .wants-row { gap: 4px; }
+body.compact .hud-bottom-left { max-width: 60vw; gap: 6px; }
+body.compact .household .portrait { width: 32px; height: 32px; }
+/* Panneau du Sim (besoins, envies…) : volet à gauche sur toute la hauteur, au-dessus de la fiche. */
+body.compact .sim-panel { position: fixed; left: calc(8px + env(safe-area-inset-left)); top: 8px; bottom: 96px; width: min(330px, 46vw); max-height: none; padding: 10px; z-index: 20; }
+body.compact .sim-panel h3 { font-size: 14px; margin: 6px 0; }
+body.compact .sim-panel .rewards { grid-template-columns: 1fr; }
+body.compact #hud.tab-open .hud-top-left, body.compact #hud.tab-open .household { display: none; }
+/* File d'actions plus discrète. */
+body.compact .queue-item { width: 36px; height: 36px; font-size: 16px; border-radius: 10px; }
+body.compact .queue-item .lbl { display: none; }
+body.compact .queue-item .x { width: 16px; height: 16px; font-size: 10px; top: -5px; right: -5px; }
+/* Barre du haut et temps. */
+body.compact .hud-top-right .btn.icon, body.compact .mode-switch .btn { width: 36px; height: 36px; min-height: 36px; padding: 0; }
+body.compact .timebox { padding: 5px; gap: 3px; }
+body.compact .timebox .btn.icon { width: 32px; height: 32px; min-height: 32px; padding: 0; }
+body.compact .funds { font-size: 13px; }
+body.compact .day { font-size: 10px; }
+/* Notifications : petites, en haut à droite sous la barre, deux au plus. */
+body.compact .toasts { top: calc(52px + env(safe-area-inset-top)); left: auto; right: 8px; transform: none; align-items: flex-end; }
+body.compact .toast { font-size: 12px; padding: 5px 10px; max-width: 46vw; }
+/* Questions des Sims : petite carte à droite, non bloquante. */
+body.compact .dialog-pop { left: auto; right: calc(8px + env(safe-area-inset-right)); top: 52px; transform: none; width: min(290px, 44vw); padding: 10px; max-height: calc(100vh - 130px); overflow: auto; }
+body.compact .dialog-pop h4 { font-size: 14px; }
+body.compact .dialog-pop p { font-size: 12px; margin: 4px 0 8px; }
+body.compact .dialog-pop .btn { font-size: 12px; padding: 5px 8px; min-height: 32px; }
+/* Leçon : bandeau compact en haut au centre. */
+body.compact .lesson { top: 6px; width: min(380px, 50vw); padding: 8px 10px; font-size: 12px; }
+body.compact .lesson p { margin: 4px 0 6px !important; }
+body.compact .lesson .want-ic { width: 24px; height: 24px; font-size: 13px; }
+/* Menus déroulants et radiaux : jamais hors de l'écran. */
+body.compact .main-dropdown { max-height: calc(100vh - 60px); overflow: auto; min-width: 210px; }
+body.compact .main-dropdown .menu-item { min-height: 34px; font-size: 13px; }
+body.compact .pie { width: min(260px, 46vw); max-height: calc(100vh - 16px); padding: 6px; gap: 3px; }
+body.compact .pie .btn { min-height: 32px; font-size: 13px; padding: 4px 8px; }
+body.compact .pie .pie-title { font-size: 14px; padding: 0 4px 2px; }
+/* Achat / construction : catalogue plus bas, cartes plus petites, aide masquée. */
+body.compact .catalog { max-height: 54vh; padding: 6px; left: 6px; right: 6px; gap: 2px; }
+body.compact .catalog .tool-row { flex-wrap: nowrap; overflow-x: auto; gap: 4px; }
+body.compact .catalog .tool-row b { font-size: 14px !important; }
+body.compact .catalog .tabs { flex-wrap: nowrap; overflow-x: auto; }
+body.compact .catalog .tab { font-size: 12px; padding: 4px 8px; white-space: nowrap; }
+body.compact .catalog .items { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 86px; overflow-x: auto; overflow-y: hidden; gap: 5px; padding-bottom: 4px; }
+body.compact .catalog .item { padding: 3px; }
+body.compact .catalog .item .ic { font-size: 20px; }
+body.compact .catalog .item .pr { font-size: 11px; }
+body.compact .catalog .tabs { margin-bottom: 4px; gap: 4px; }
+body.compact .catalog .tool-row .btn { min-height: 30px; font-size: 12px; padding: 3px 8px; }
+body.compact .catalog .item .nm { font-size: 10px; min-height: 22px; }
+body.compact .catalog > .muted { display: none; }
+/* Menu principal : deux colonnes en paysage. */
+body.compact .menu-box { width: min(760px, 96vw); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px; }
+body.compact .menu-box .game-title, body.compact .menu-box .studio-tag { grid-column: 1 / -1; }
+body.compact .menu-box .game-title { font-size: 30px; line-height: 1; margin: 0; text-align: center; }
+body.compact .menu-box .game-title br { display: none; }
+body.compact .menu-box .game-title .y { margin-left: 10px; }
+body.compact .menu-box .btn { min-height: 40px; font-size: 14px; padding-left: 12px; }
+body.compact .version { display: none; }
+/* Fenêtres : presque plein écran, contenu qui défile. */
+body.compact .modal { max-height: calc(100vh - 16px); width: min(720px, 96vw); }
+body.compact .modal-head h2 { font-size: 17px; }
+body.compact .lesson { font-size: 11px; }
+body.compact .lesson .btn { min-height: 28px; font-size: 11px; padding: 3px 8px; }
+/* Créateur de personnage : onglets sur une ligne qui défile, marges réduites. */
+body.compact .cas-panel { top: 6px; bottom: 6px; right: 6px; width: min(560px, 60vw); }
+body.compact .cas-panel .tabs { flex-wrap: nowrap; overflow-x: auto; }
+body.compact .cas-panel .tab { white-space: nowrap; font-size: 12px; padding: 4px 8px; }
+body.compact .cas-panel .modal-head { padding: 6px 10px; }
+body.compact .cas-panel .modal-foot { padding: 6px 10px; }
+body.compact .cas-panel .modal-foot .btn { min-height: 32px; font-size: 12px; }
+body.compact .cas-left { max-width: 36vw; gap: 4px; }
+body.compact .cas-left .btn.icon { width: 34px; height: 34px; min-height: 34px; padding: 0; }
+/* L'icône du prix (et celles du nom) gardent la taille du texte, pas celle de l'icône de l'objet. */
+.catalog .item .pr .ic, .catalog .item .nm .ic { font-size: inherit; }

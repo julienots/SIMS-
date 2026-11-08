@@ -149,13 +149,23 @@ export function promptBox(text, value = '', { title = 'Saisie' } = {}) {
 }
 
 // ------------------------------------------------------------------ notifications
+// Écran compact (téléphone, surtout en paysage) : l'interface se resserre et n'affiche qu'une chose à la fois.
+export const isCompact = () => innerHeight < 520 || innerWidth < 760;
+export function initCompact() {
+  const apply = () => document.body.classList.toggle('compact', isCompact());
+  apply();
+  addEventListener('resize', apply);
+  addEventListener('orientationchange', () => setTimeout(apply, 200));
+}
+
 export function toast(text, icon = '✨', onclick) {
   let box = document.querySelector('.toasts');
   if (!box) { box = h('div', { class: 'toasts' }); ui().appendChild(box); }
   const t = h('div', { class: 'toast', onclick: () => { onclick?.(); t.remove(); } }, `${icon} ${text}`);
   box.appendChild(t);
-  while (box.children.length > 4) box.firstChild.remove();
-  setTimeout(() => t.remove(), 4200);
+  const compact = isCompact();
+  while (box.children.length > (compact ? 2 : 4)) box.firstChild.remove();
+  setTimeout(() => t.remove(), compact ? 3000 : 4200);
 }
 
 export function loading(text = 'Chargement…') {

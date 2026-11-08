@@ -48,7 +48,12 @@ export class Lessons {
   // Appelé régulièrement par le HUD : valide la leçon en cours si l'action a été faite.
   tick() {
     if (this.disabled) return;
-    if (!this.el) { this.show(); return; }
+    const hud = this.game.ui?.hud;
+    const busy = !!hud?.busy?.() || !!document.querySelector('.dialog-pop');
+    if (!this.el) { if (!busy) this.show(); return; }
+    // Écran occupé (fenêtre, menu, question d'un Sim, autre mode) : la leçon se met en retrait sans être perdue.
+    this.el.style.display = busy ? 'none' : '';
+    if (busy) return;
     const l = this.cur;
     if (l?.done && l.done(this.game, this.ctx, this.seen)) this.finish(l.id);
   }

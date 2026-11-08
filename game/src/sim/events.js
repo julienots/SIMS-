@@ -215,6 +215,9 @@ export class EventSystem {
     const w = this.w, S = this.S;
     const sims = this.activeSims();
     if (!sims.length || S.pendingDialogs.length > 2) return false;
+    // Au plus une question au joueur toutes les 8 heures de jeu (elles s'intercalaient trop souvent).
+    if (w.time - (S.lastDialogAt ?? -1e9) < 480) return false;
+    S.lastDialogAt = w.time;
     const s = w.rng.pick(sims);
     const crush = w.relPairs(s.id).filter(p => p.r.romance > 20 && !['partner', 'married', 'engaged'].includes(p.r.status) && w.sim(p.other)).map(p => w.sim(p.other))[0];
     const enemy = w.relPairs(s.id).filter(p => p.r.friend < -15 && w.sim(p.other)).map(p => w.sim(p.other))[0];

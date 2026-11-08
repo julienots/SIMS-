@@ -1,7 +1,7 @@
 // Point d'entrée : écran du studio, menu principal, création d'univers, chargement, crédits.
 import { Game } from './game.js';
 import { Input } from './engine/input.js';
-import { h, btn, openModal, toast, loading, confirmBox, promptBox, focusFirst, usingPadRef, startIconObserver } from './ui/dom.js';
+import { h, btn, openModal, toast, loading, confirmBox, promptBox, focusFirst, usingPadRef, startIconObserver, initCompact } from './ui/dom.js';
 import { Hud } from './ui/hud.js';
 import { Panels } from './ui/panels.js';
 import { BuildMode } from './ui/build.js';
@@ -17,6 +17,7 @@ import { GAME_VERSION } from './mods/validate.js';
 class App {
   constructor() {
     startIconObserver(document.body);
+    initCompact();
     this.settings = loadSettings();
     audioSettings.sfx = this.settings.sfx ?? 0.5;
     audioSettings.music = this.settings.music ?? 0.25;

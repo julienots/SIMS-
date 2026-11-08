@@ -1,6 +1,6 @@
 // Interface en jeu (mode Vie) : foyer, fiche du sim, besoins, file d'actions, temps, menus contextuels,
 // dialogues des habitants, contrôle direct tactile.
-import { h, btn, toast, setFocus, focusFirst, usingPadRef, openModal } from './dom.js';
+import { h, btn, toast, setFocus, focusFirst, usingPadRef, openModal, isCompact } from './dom.js';
 import { registry } from '../mods/registry.js';
 import { formatClock, formatMoney, DAYS, escapeHtml, clamp } from '../core/util.js';
 import { REWARDS, reward } from '../sim/wants.js';
@@ -27,7 +27,6 @@ export class Hud {
     document.getElementById('ui').appendChild(this.root);
     this.build();
     this.lessons ||= new Lessons(game);
-    setTimeout(() => this.lessons?.show(), 1500);
   }
   unmount() { this.lessons?.dispose(); this.root?.remove(); this.root = null; this.closePie(); document.querySelector('.dialog-pop')?.remove(); }
 
@@ -108,6 +107,7 @@ export class Hud {
   refresh() {
     if (!this.root || !this.W) return;
     if (this.tab) this.lessons?.mark(`tab:${this.tab}`);
+    this.root.classList.toggle('tab-open', !!this.tab);
     this.lessons?.mark(`mode:${this.game.mode}`);
     if (this.S.speedIdx !== 1) this.lessons?.mark('speed');
     const g = this.game;
@@ -498,7 +498,30 @@ export class Hud {
   }
 
   // ------------------------------------------------------------------ dialogues « conseil »
+  // L'écran est-il déjà occupé (fenêtre, menu, panneau du Sim sur téléphone, autre mode) ? Les questions des Sims
+  // et les leçons attendent alors leur tour au lieu de s'intercaler.
+  busy() {
+    const g = this.game;
+    if (document.querySelector('.modal-back, .pie, .main-dropdown')) return true;
+    if (g.mode !== 'live' || g.ui.cas?.active) return true;
+    return isCompact() && !!this.tab;
+  }
+
   showDialog(d) {
+    this.pendingDialog = d;
+    clearInterval(this.dialogTimer);
+    const tryShow = () => {
+      if (!this.root || !this.pendingDialog) { clearInterval(this.dialogTimer); return; }
+      if (this.busy()) return;
+      clearInterval(this.dialogTimer);
+      const next = this.pendingDialog; this.pendingDialog = null;
+      this.renderDialog(next);
+    };
+    this.dialogTimer = setInterval(tryShow, 700);
+    tryShow();
+  }
+
+  renderDialog(d) {
     document.querySelector('.dialog-pop')?.remove();
     const s = this.W.sim(d.sim);
     const box = h('div', { class: 'panel dialog-pop', dataset: { scope: '1' } },
@@ -506,7 +529,9 @@ export class Hud {
       h('div', { class: 'col', style: { gap: '6px' } }, ...d.options.map((o, i) => btn(o.label, () => { this.S.events.answerDialog(d.id, i); box.remove(); }, i === 0 ? 'primary' : ''))),
       btn('Plus tard', () => box.remove(), 'ghost small', { dataset: { back: '1' }, style: { marginTop: '8px' } }));
     document.getElementById('ui').appendChild(box);
-    if (s) this.game.rig.focus(s.pos.x, s.pos.y);
+    // Sans réponse, la question se range d'elle-même (comme « Plus tard »).
+    setTimeout(() => box.remove(), isCompact() ? 20000 : 35000);
+    if (s && !isCompact()) this.game.rig.focus(s.pos.x, s.pos.y);
     sfx('notify');
     if (usingPadRef.value) setTimeout(() => setFocus(box.querySelector('.btn.primary')), 50);
   }
