@@ -58,7 +58,8 @@ test('SUPERPOWERS : activation, pouvoirs utilisés, désactivation sans perte de
   assert.equal(flyer._rt.moveMode, 'fly');
   assert.ok(flyer.pos.hz > 0.5, `altitude ${flyer.pos.hz}`);
   // Téléportation : position modifiée instantanément.
-  const tp = powered[1];
+  // Un Sim présent (pas au travail ni dans un lieu public, où il est caché et ne peut pas se téléporter).
+  const tp = powered.find(x => x !== flyer && !x._rt.hidden && !x.flags.atVenue && x.stage !== 'baby' && !x.queue.some(a => a.locked));
   sim.powers.grant(tp, 'sp_teleport');
   tp.modData.powers.energy = 100;
   const before = { x: tp.pos.x, y: tp.pos.y };

@@ -102,6 +102,8 @@ export const MOODLETS = {
   secret_out: { name: 'Secret dévoilé', emotion: 'embarrassed', weight: 3, dur: 600 },
   rumor_victim: { name: 'Victime de rumeurs', emotion: 'tense', weight: 2, dur: 480 },
   new_baby: { name: 'Nouveau bébé', emotion: 'happy', weight: 4, dur: 1440 },
+  want_fulfilled: { name: 'Envie réalisée', emotion: 'happy', weight: 1, dur: 120 },
+  potion_happy: { name: 'Potion de bonne humeur', emotion: 'happy', weight: 4, dur: 1440 },
   grieving: { name: 'Chagrin', emotion: 'sad', weight: 3, dur: 1440 },
   scared_event: { name: 'Grosse frayeur', emotion: 'scared', weight: 3, dur: 120 },
   amazed: { name: 'Émerveillé', emotion: 'happy', weight: 2, dur: 180 },

@@ -3,6 +3,7 @@
 import { h, btn, toast, setFocus, focusFirst, usingPadRef } from './dom.js';
 import { registry } from '../mods/registry.js';
 import { formatClock, formatMoney, DAYS, escapeHtml, clamp } from '../core/util.js';
+import { REWARDS, reward } from '../sim/wants.js';
 import { REL_STATUS } from '../sim/data/social.js';
 import { CAM_MODES } from '../render/camera.js';
 import { ALIGNMENTS, PASSIVE_EFFECTS } from '../sim/powers.js';
@@ -108,8 +109,10 @@ export class Hud {
           h('div', { class: 'name' }, simName(s)),
           h('div', { class: 'row', style: { gap: '6px' } }, h('span', { class: 'tag', style: { color: emo.color } }, `${emo.icon} ${emo.name}`), s.flags.atVenue ? h('span', { class: 'tag' }, '🏢 Absent') : null),
           h('div', { class: 'bar', style: { width: '150px' } }, h('i', { style: { width: `${mood}%`, background: moodColor(mood) } }))),
+        // Envies (à la Sims 4) : trois bulles à côté du portrait.
+        h('div', { class: 'wants-row', title: 'Envies' }, ...(s.wants || []).map(x => h('button', { class: `want-bubble ${x.locked ? 'locked' : ''}`, title: `${x.label} (+${x.pts})`, onclick: () => { this.tab = 'wants'; this.refresh(); } }, x.icon))),
         h('div', { class: 'sim-tabs' },
-          ...[['needs', '❤️', 'Besoins'], ['rel', '👥', 'Relations'], ['skills', '⭐', 'Compétences'], ['career', '💼', 'Carrière'], ['info', '🧠', 'Personnalité'], ...(registry.hasPowers() ? [['powers', '⚡', 'Pouvoirs']] : [])]
+          ...[['wants', '✨', 'Envies et récompenses'], ['needs', '❤️', 'Besoins'], ['rel', '👥', 'Relations'], ['skills', '⭐', 'Compétences'], ['career', '💼', 'Carrière'], ['info', '🧠', 'Personnalité'], ...(registry.hasPowers() ? [['powers', '⚡', 'Pouvoirs']] : [])]
             .map(([id, ic, lbl]) => btn(ic, () => { this.tab = this.tab === id ? null : id; this.refresh(); }, `icon small ${this.tab === id ? 'active' : ''}`, { title: lbl }))),
       );
       if (this.tab) this.bottomLeft.appendChild(this.simPanel(s));
@@ -174,6 +177,33 @@ export class Hud {
     const p = h('div', { class: 'panel sim-panel' });
     const S = this.S, W = this.W;
     switch (this.tab) {
+      case 'wants': {
+        const WS = this.S.wants;
+        WS.ensure(s);
+        p.appendChild(h('div', { class: 'row', style: { justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' } },
+          h('h3', { style: { margin: 0 } }, 'Envies'), h('span', { class: 'tag satisfaction' }, `✦ ${s.satisfaction} points de satisfaction`)));
+        if (!s.wants.length) p.appendChild(h('p', { class: 'muted' }, `${s.first} n’a pas d’envie particulière pour l’instant.`));
+        for (const x of s.wants) {
+          const left = Math.max(0, Math.round((x.until - this.W.time) / 60));
+          p.appendChild(h('div', { class: 'list-item want-item' },
+            h('span', { class: 'want-ic' }, x.icon),
+            h('div', { style: { flex: 1 } }, h('div', { style: { fontWeight: 800 } }, x.label), h('div', { class: 'muted' }, `+${x.pts} points · ${x.locked ? 'verrouillée' : `encore ${left} h`}`)),
+            btn(x.locked ? '🔒' : '🔓', () => { WS.toggleLock(s, x.uid); this.refresh(); }, 'icon small ghost', { title: x.locked ? 'Déverrouiller' : 'Verrouiller (ne disparaît pas)' }),
+            btn('✕', () => { WS.dismiss(s, x.uid); this.refresh(); }, 'icon small ghost', { title: 'Écarter cette envie' })));
+        }
+        p.appendChild(h('h3', {}, 'Boutique de récompenses'));
+        const grid = h('div', { class: 'rewards' });
+        for (const r of REWARDS) {
+          const owned = r.kind === 'trait' && s.rewards.includes(r.id);
+          grid.appendChild(h('div', { class: `reward-card ${owned ? 'owned' : ''}` },
+            h('div', { class: 'row', style: { gap: '8px', alignItems: 'center' } }, h('span', { class: 'want-ic' }, r.icon), h('div', { style: { fontWeight: 800 } }, r.name)),
+            h('div', { class: 'muted', style: { fontSize: '12px' } }, r.desc),
+            owned ? h('span', { class: 'tag' }, '✓ Obtenue') : btn(`✦ ${r.cost}`, () => { const err = WS.buy(s, r.id); if (err) toast(err, '⚠️'); else toast(`${s.first} : ${r.name}`, r.icon); this.refresh(); }, `small ${s.satisfaction >= r.cost ? 'primary' : ''}`, s.satisfaction >= r.cost ? {} : { disabled: true })));
+        }
+        p.appendChild(grid);
+        if (s.rewards.length) p.appendChild(h('p', { class: 'muted' }, 'Traits de récompense : ', ...s.rewards.map(id => h('span', { class: 'tag' }, `${reward(id)?.icon} ${reward(id)?.name}`))));
+        break;
+      }
       case 'needs': {
         p.appendChild(h('h3', { style: { marginTop: 0 } }, 'Besoins'));
         this.needEls = {};

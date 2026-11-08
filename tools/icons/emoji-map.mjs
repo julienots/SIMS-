@@ -39,5 +39,5 @@ export const EMOJI_ICONS = {
   '🗣️': 'megaphone', '👨‍🍳': 'chef-hat', '🔬': 'microscope', '🏅': 'medal', '🗂️': 'folders', '🛩️': 'plane', '📐': 'ruler', '🕵️': 'scan-search',
   '🎧': 'headphones', '😁': 'smile', '🧑‍🍳': 'chef-hat', '🔵': 'circle', '🔆': 'sun', '💫': 'sparkles', '💧': 'droplet', '🪨': 'mountain',
   '🌪️': 'tornado', '🦘': 'rabbit', '💚': 'heart', '🎈': 'party-popper', '🦎': 'bug', '🦾': 'bot', '🪽': 'feather', '🐙': 'shell',
-  '🐢': 'turtle', '👹': 'skull', '🪐': 'orbit',
+  '🐢': 'turtle', '👹': 'skull', '🪐': 'orbit', '🔒': 'lock', '🔓': 'lock-open', '🐶': 'dog', '🐱': 'cat', '🦴': 'bone', '🤰': 'baby', '🎓': 'graduation-cap',
 };

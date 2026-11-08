@@ -192,3 +192,14 @@ label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 700;
 .main-dropdown .menu-item { justify-content: flex-start; text-align: left; width: 100%; gap: 10px; }
 .view-tools:not(.open) .tool { display: none; }
 #hud.hud-min .hud-top-left, #hud.hud-min .hud-bottom-left, #hud.hud-min .view-tools, #hud.hud-min .household { display: none !important; }
+
+/* Envies (Sims 4) et boutique de récompenses */
+.wants-row { display: flex; gap: 6px; align-items: center; }
+.want-bubble { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); background: radial-gradient(circle at 35% 30%, #4a4f7a, #262a48); color: #ffe066; font-size: 18px; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.want-bubble.locked { border-color: var(--yellow); }
+.want-bubble:hover { transform: scale(1.08); }
+.want-ic { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #2b2f52; color: #ffe066; font-size: 18px; flex: none; }
+.satisfaction { color: #ffe066; font-weight: 800; }
+.rewards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.reward-card { background: var(--panel2); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.reward-card.owned { outline: 2px solid #4cd964; }

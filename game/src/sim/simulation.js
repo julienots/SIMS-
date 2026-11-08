@@ -10,6 +10,7 @@ import { LifeSystem } from './lifecycle.js';
 import { EventSystem } from './events.js';
 import { PowerSystem } from './powers.js';
 import { ANIMALS } from './data/animals.js';
+import { WantsSystem } from './wants.js';
 
 export const SPEEDS = [0, 1, 3, 8];
 const WALK = 1.7, RUN = 3.6;      // cases / seconde de simulation
@@ -35,6 +36,7 @@ export class Simulation extends Emitter {
     this.life = new LifeSystem(this);
     this.events = new EventSystem(this);
     this.powers = new PowerSystem(this);
+    this.wants = new WantsSystem(this);
     this.lastHour = Math.floor(world.time / 60);
     this.lastDay = dayOf(world.time);
     this.pendingDialogs = [];
@@ -151,6 +153,7 @@ export class Simulation extends Emitter {
 
   onHour(hour) {
     this.life.onHour(hour);
+    for (const s of this.world.sims) this.wants.tick(s);
     this.events.onHour(hour);
     this.emit('hour', hour);
   }
@@ -211,7 +214,7 @@ export class Simulation extends Emitter {
     const powerMods = this.powers.needModifiers(s);
     for (const n of registry.needs) {
       if (s._rt.hidden && s.flags.atVenue && (n.id === 'fun' || n.id === 'social')) continue;
-      let d = n.decay * (mult[n.id] || 1) * realism * (powerMods[n.id] || 1);
+      let d = n.decay * (mult[n.id] || 1) * realism * (powerMods[n.id] || 1) * this.wants.needMult(s, n.id);
       if (s._rt.sleeping && n.id === 'sleep') continue;
       if (s.stage === 'child') d *= 0.9;
       s.needs[n.id] = clamp(s.needs[n.id] - d * dtMin, 0, 100);
@@ -476,11 +479,6 @@ export class Simulation extends Emitter {
 
   landIfFlying(s) { s.pos.hz = s.pos.l * LEVEL_HEIGHT; }
 
-  unstick(s) {
-    const f = this.nav.nearestFree(s.pos.l, s.pos.x, s.pos.y, 20);
-    if (f) { s.pos.x = f.x + 0.5; s.pos.y = f.y + 0.5; s.pos.l = f.l; s.pos.hz = f.l * LEVEL_HEIGHT; }
-  }
-
   // Sim arrêté sur une case occupée (fin de glissement interrompue en sortant d'un lit, d'un fauteuil…) :
   // on le replace au centre de la case libre la plus proche, sans traverser de mur.
   unstick(s) {
@@ -494,7 +492,13 @@ export class Simulation extends Emitter {
       const d = Math.hypot(x + 0.5 - s.pos.x, y + 0.5 - s.pos.y);
       if (d < bd) { bd = d; best = { x, y }; }
     }
-    if (!best) return false;
+    if (!best) {
+      // Aucune case libre tout près : case accessible la plus proche (20 cases au plus).
+      const f = this.nav.nearestFree(l, sx, sy, 20);
+      if (!f) return false;
+      s.pos.x = f.x + 0.5; s.pos.y = f.y + 0.5; s.pos.l = f.l; s.pos.hz = f.l * LEVEL_HEIGHT;
+      return true;
+    }
     s.pos.x = best.x + 0.5; s.pos.y = best.y + 0.5;
     return true;
   }
@@ -695,6 +699,7 @@ export class Simulation extends Emitter {
   gainSkill(s, skill, amount) {
     let mult = 1;
     for (const t of s.traits) mult *= registry.trait(t)?.skillGain || 1;
+    mult *= this.wants.skillMult(s);
     const emo = registry.emotions[s.emotion];
     if (emo?.skillBoost) mult *= emo.skillBoost;
     if (emo?.creativeBoost && ['creativity', 'music'].includes(skill)) mult *= emo.creativeBoost;
@@ -707,11 +712,13 @@ export class Simulation extends Emitter {
       this.world.log('skill', `${simName(s)} atteint le niveau ${after} en ${sk?.name || skill}.`, [s.id], { icon: sk?.icon || '⭐', important: after >= 5 });
       this.emit('notify', { text: `${s.first} : ${sk?.name} niveau ${after} !`, icon: sk?.icon, sim: s.id });
       if (after === SKILL_MAX) this.life.checkAspiration(s);
+      this.wants.event(s, 'skill', skill);
     }
   }
 
   completeObject(s, a, o, aff) {
     const w = this.world;
+    this.wants.event(s, 'aff', aff.id);
     if (aff.moodlet) this.addMoodlet(s, aff.moodlet);
     if (aff.produces === 'meal') {
       const skill = s.skills.cooking || 0;
@@ -856,6 +863,7 @@ export class Simulation extends Emitter {
         s.needs.comfort = clamp(s.needs.comfort + (a.phase === 'eat' ? 0.2 : -0.1) * dtMin, 0, 100);
         if (a.t > 25) {
           rt.carry = null;
+          this.wants.event(s, 'aff', 'eat_meal');
           if (a.quality >= 6) this.addMoodlet(s, 'great_meal');
           if (a.phase === 'eat') { a.phase = 'standUp'; a.exitT = 0; } else this.finish(s, a, false);
         }
@@ -864,7 +872,7 @@ export class Simulation extends Emitter {
       case 'standUp':
         a.exitT += dt;
         rt.anim = 'stand_up';
-        if (a.exitT > 0.8 && (this.slideTo(s, a.pt.ax + 0.5, a.pt.ay + 0.5, undefined, dt) || a.exitT > 2)) this.finish(s, a, false);
+        if (a.exitT > 0.8 && (this.slideTo(s, a.pt.ax + 0.5, a.pt.ay + 0.5, undefined, dt) || a.exitT > 2)) { if (a.exitT > 2) this.unstick(s); this.finish(s, a, false); }
         return;
       case 'exit':
         this.finish(s, a, true);
@@ -980,6 +988,9 @@ export class Simulation extends Emitter {
   // ------------------------------------------------------------------ autonomie
   chooseAutonomous(s) {
     const w = this.world;
+    // Sim resté sur une case occupée (table, lit…) : depuis là tous les trajets échouent. On le replace et on
+    // oublie les objets qu'il croyait inaccessibles à cause de ça.
+    if (this.unstick(s)) s._rt.unreachable = {};
     if ((s._rt.failStreak || 0) >= 3) {
       s._rt.rescues = (s._rt.rescues || 0) + 1;
       s._rt.failStreak = 0;
@@ -1074,6 +1085,8 @@ export class Simulation extends Emitter {
     if (ACTIVITY_LIKES[s.dislikes?.activity]?.includes(aff.id)) score *= 0.35;
     if (aff.tags?.includes('work') && s.career.id !== 'creator') score *= 0.3;
     if (night && !['sleep', 'nap', 'toilet', 'snack', 'drink', 'shower'].includes(aff.id) && s.needs.sleep < 45) score *= 0.5;
+    // Envie en cours : le Sim est attiré par l'activité correspondante (comme dans les Sims).
+    if (s.wants?.some(x => x.kind === 'aff' && (x.target === aff.id || (x.target === 'eat_meal' && aff.id === 'cook')))) score = score * 1.4 + 1.2;
     return score;
   }
 

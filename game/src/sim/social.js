@@ -96,6 +96,7 @@ export class SocialSystem {
         if (this.partnerOf(s) && this.partnerOf(s) !== t.id) wgt *= 0.05;
       }
       if (so.cat === 'funny' && emo.funnyBonus) wgt *= 1.5;
+      if (s.wants?.some(x => x.kind === 'social' && (x.target === so.cat || x.target === so.id))) wgt *= 3;
       if (so.important) wgt *= 0.4;
       cands.push({ so, wgt });
     }
@@ -209,6 +210,7 @@ export class SocialSystem {
     }
     const emo = registry.emotions[t.emotion] || {};
     c += emo.socialBonus || 0;
+    c += this.S.wants?.socialBonus(a) || 0;
     if (so.cat === 'romantic') c += (registry.emotions[t.emotion]?.romanticBonus || 0);
     if (so.cat === 'funny') c += (registry.emotions[t.emotion]?.funnyBonus || 0);
     for (const tr of t.traits) c += registry.trait(tr)?.acceptBonus || 0;
@@ -245,6 +247,8 @@ export class SocialSystem {
     const rAT = w.rel(a.id, t.id), rTA = w.rel(t.id, a.id);
     const firstMeet = !rAT.known;
     rAT.known = rTA.known = true;
+    if (firstMeet) { S.wants.event(a, 'meet'); S.wants.event(t, 'meet'); }
+    if (ok) S.wants.event(a, 'social', so.cat, so.id);
     if (fx.friend) { rTA.friend = clamp(rTA.friend + fx.friend, -100, 100); rAT.friend = clamp(rAT.friend + fx.friend * 0.7, -100, 100); }
     if (fx.romance) { rTA.romance = clamp(rTA.romance + fx.romance, -100, 100); rAT.romance = clamp(rAT.romance + fx.romance * 0.8, -100, 100); }
     if (fx.social) { a.needs.social = clamp(a.needs.social + fx.social, 0, 100); t.needs.social = clamp(t.needs.social + fx.social * 0.8, 0, 100); }

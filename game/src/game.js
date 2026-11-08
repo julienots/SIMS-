@@ -86,6 +86,7 @@ export class Game {
       this.sim.on('timeStopped', () => document.body.appendChild(Object.assign(document.createElement('div'), { className: 'timestop-tint', id: 'tstint' }))),
       this.sim.on('timeResumed', () => document.getElementById('tstint')?.remove()),
       this.sim.on('powerUsed', () => sfx('power')),
+      this.sim.on('wants', s => { if (s.id === this.selected) this.ui.hud?.refresh(); }),
       world.on('journal', e => { if (e.important) this.ui.hud?.onJournal(e); }),
     ];
     // Foyer joué : le premier foyer, ou celui mémorisé.
