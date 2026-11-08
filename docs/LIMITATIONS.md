@@ -25,6 +25,10 @@
 - **Circulation** : voitures d'ambiance (affichage seulement : elles ne transportent pas les Sims). Modèles de voitures
   KayKit (stylisés), faute de voitures réalistes libres accessibles.
 
+- **Grossesse** : le ventre est obtenu en arrondissant le bas du torse (pas de modèle dédié) ; l'arrondi touche aussi un peu le dos.
+- **Animaux de compagnie** : chiens seulement (pas de modèle de chat réaliste libre trouvé) ; ils restent sur le terrain du foyer.
+- **Leçons** : progression retenue dans le navigateur de l'appareil.
+
 ## Étapes suivantes proposées
 1. Tester l’APK sur 2–3 téléphones et une manette Xbox Bluetooth ; ajuster la qualité « auto ».
 2. Remplacer les meubles stylisés par des meubles réalistes (Poly Haven / Kenney Furniture Kit) dès que les fichiers sont fournis.

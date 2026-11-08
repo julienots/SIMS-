@@ -4,8 +4,18 @@ Simulation de vie en 3D (Three.js) : univers personnalisables, habitants autonom
 construction de maisons et de quartiers, mode créatif total, système de mods sans code et mod officiel **SUPERESSENCE SUPERPOWERS**.
 Jouable au tactile, au clavier/souris et à la manette (Xbox ou compatible).
 
+## Fonctionnalités principales
+- Humains réalistes (Microsoft Rocketbox) et meubles réalistes (AI2-THOR) à l'échelle réelle ; style cartoon disponible
+- Besoins, humeurs, traits, aspirations, **envies et points de satisfaction** avec boutique de récompenses
+- Relations, romance, mariage, **grossesse de 3 jours** visible, bébés, enfants, carrières, école, factures
+- **Animaux de compagnie** (chiens) : adoption, soins, jeux ; faune réaliste en liberté
+- Quartiers : routes, trottoirs, jardins (clôtures, allées, voitures garées), **circulation automobile**, arbres réalistes
+- Modes Vivre / Acheter / Construire, mode créatif total, contrôle direct, caméras multiples
+- Menus façon Sims à icônes vectorielles, interface minimale, **leçons de démarrage**
+- Mods sans code, créateur de mods, mod officiel SUPERESSENCE SUPERPOWERS (35 pouvoirs)
+
 ## Télécharger l’APK
-`release/MyLifeUniverse.apk` (Android 7.0+, OpenGL ES 3 / WebGL 2, ~32 Mo, signé v2/v3).
+`release/MyLifeUniverse.apk` (Android 7.0+, OpenGL ES 3 / WebGL 2, ~82 Mo, signé v2/v3).
 Installation : copiez l’APK sur le téléphone, autorisez « sources inconnues », ouvrez-le.
 
 ## Lancer sur PC
@@ -35,7 +45,7 @@ Résultats : voir `docs/TESTS.md`.
 - `game/src/render/` — rendu Three.js (monde, murs fusionnés, personnages animés, effets)
 - `game/src/ui/` — interface (HUD, construction/achat, créateur de personnages, mods, créatif)
 - `game/src/mods/` — registre, gestionnaire, validation · `game/mods/` — mods intégrés (JSON)
-- `game/assets/models/` — 139 modèles GLB (voir `docs/ASSETS.md`)
+- `game/assets/models/` — modèles GLB : humains, animaux, meubles réalistes, nature (voir `docs/ASSETS.md`)
 - `android/` — projet Android (Java) · `tools/` — pipelines d’assets, web et APK
 
 Documentation : `docs/MODDING.md`, `docs/ASSETS.md`, `docs/TESTS.md`, `docs/LIMITATIONS.md`.

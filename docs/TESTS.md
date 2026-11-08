@@ -26,6 +26,9 @@
 - **liecheck** : au lit, la tête est du côté de la tête de lit.
 - **aerial** : vue aérienne d'un quartier (routes entre les terrains, jardins, circulation).
 - **perf** : appels de dessin et triangles (carte 64 / 128).
+- Tests Node **wants.test.mjs** (envies réalisées en autonomie, boutique, trait permanent), **family.test.mjs** (grossesse
+  3 jours puis naissance), **pets.test.mjs** (chien adopté qui reste chez lui et dont le foyer s'occupe).
+- Scénarios navigateur **wants**, **preg**, **pets**, **lessons**.
 - Test Node **orient.test.mjs** : orientation de tous les objets utilisables dans les 4 rotations.
 - **play** : clic sur le frigo → menu radial → action dans la file ; menu social ; boule de feu ; vol ; pièce construite par glisser ; canapé acheté ; contrôle direct au clavier.
 - **gamepad** : manette simulée via la passerelle Android (`NativePad`) et via l’API Gamepad standard : navigation des menus (croix, A, B), curseur au stick, vitesse (RB), contrôle direct (Y), déplacement au stick, interaction (A), sortie (B), pause (Menu).
