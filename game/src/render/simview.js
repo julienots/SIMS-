@@ -116,6 +116,15 @@ export class SimView {
       this.heightM = 1.72 * this.baseScale * (childBody ? 0.75 : 1);
       this.headScale = ap.head || 1;
       this.rootRef = this.bones.Bip01?.position.length() || 1;
+      // Ventre (grossesse) : axe local de l'os Bip01_Spine qui pointe vers l'avant du corps.
+      const sp = this.bones.Bip01_Spine;
+      this.bellyAxis = null;
+      if (sp) {
+        model.updateMatrixWorld(true);
+        const q = model.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(sp.getWorldQuaternion(new THREE.Quaternion()));
+        const ay = new THREE.Vector3(0, 1, 0).applyQuaternion(q), az = new THREE.Vector3(0, 0, 1).applyQuaternion(q);
+        this.bellyAxis = Math.abs(ay.z) > Math.abs(az.z) ? 'y' : 'z';
+      }
     } else {
       // Visibilité des accessoires d'origine.
       model.traverse(o => {
@@ -379,12 +388,18 @@ export class SimView {
       if (b.head) b.head.scale.setScalar(this.headScale || 1);
       const w = Math.sqrt((ap.shoulders || 1) * (ap.build || 1));
       if (b.spine) b.spine.scale.set(1, w, w);
+      // Grossesse : le bas du torse s'arrondit vers l'avant ; la poitrine garde sa taille.
+      if (b.spine && this.bellyAxis) {
+        const f = 1 + 0.22 * (s.flags.belly || 0);
+        b.spine.scale[this.bellyAxis] *= f;
+        if (b.Bip01_Spine1) b.Bip01_Spine1.scale[this.bellyAxis] = 1 / f;
+      }
       // Squelette Biped : l'axe X local suit la longueur de l'os.
       for (const [n, k] of [['Bip01_L_Thigh', 'legs'], ['Bip01_R_Thigh', 'legs'], ['Bip01_L_UpperArm', 'arms'], ['Bip01_R_UpperArm', 'arms']]) if (b[n]) b[n].scale.x = ap[k] || 1;
     } else if (b.head) b.head.scale.setScalar(this.headScale || 1);
     if (!this.real) {
     if (b.chest) b.chest.scale.set((ap.shoulders || 1) * (ap.build || 1), 1, ap.build || 1);
-    if (b.hips) b.hips.scale.set(ap.build || 1, 1, ap.build || 1);
+    if (b.hips) b.hips.scale.set(ap.build || 1, 1, (ap.build || 1) * (1 + 0.15 * (s.flags.belly || 0)));
     if (b.upperlegl) b.upperlegl.scale.y = ap.legs || 1;
     if (b.upperlegr) b.upperlegr.scale.y = ap.legs || 1;
     if (b.upperarml) b.upperarml.scale.y = ap.arms || 1;

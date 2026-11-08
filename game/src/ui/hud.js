@@ -107,7 +107,7 @@ export class Hud {
         h('div', { class: 'portrait selected', style: { background: portraitBg(s), width: '56px', height: '56px' } }, s.first[0]),
         h('div', { class: 'col', style: { gap: '4px', minWidth: '150px' } },
           h('div', { class: 'name' }, simName(s)),
-          h('div', { class: 'row', style: { gap: '6px' } }, h('span', { class: 'tag', style: { color: emo.color } }, `${emo.icon} ${emo.name}`), s.flags.atVenue ? h('span', { class: 'tag' }, '🏢 Absent') : null),
+          h('div', { class: 'row', style: { gap: '6px' } }, h('span', { class: 'tag', style: { color: emo.color } }, `${emo.icon} ${emo.name}`), s.flags.atVenue ? h('span', { class: 'tag' }, '🏢 Absent') : null, s.flags.babyDue ? h('span', { class: 'tag', title: 'Grossesse' }, `🤰 Enceinte · jour ${this.S.life.trimester(s)}/3`) : null),
           h('div', { class: 'bar', style: { width: '150px' } }, h('i', { style: { width: `${mood}%`, background: moodColor(mood) } }))),
         // Envies (à la Sims 4) : trois bulles à côté du portrait.
         h('div', { class: 'wants-row', title: 'Envies' }, ...(s.wants || []).map(x => h('button', { class: `want-bubble ${x.locked ? 'locked' : ''}`, title: `${x.label} (+${x.pts})`, onclick: () => { this.tab = 'wants'; this.refresh(); } }, x.icon))),

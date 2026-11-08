@@ -160,6 +160,7 @@ export class LifeSystem {
       if (grows && stage && s.ageDays >= stage.days) this.ageUp(s);
       // Les babies attendus naissent.
       if (s.flags.babyDue && s.flags.babyDue <= day) this.birth(s);
+      else if (s.flags.babyDue) this.pregnancyDay(s);
       if (s.stage !== 'baby') this.checkAspiration(s);
     }
     S.events.onNewDay(day);
@@ -188,20 +189,48 @@ export class LifeSystem {
     this.S.emit('appearance', s);
   }
 
+  // Grossesse : 3 jours, avec des humeurs selon le trimestre ; la naissance a lieu au début du 4e jour.
+  static PREGNANCY_DAYS = 3;
   scheduleBaby(a, b) {
     const w = this.w;
     if (a.flags.babyDue || b.flags.babyDue) return;
     const h = w.household(a.householdId);
     if (h && h.members.length >= 8) { this.S.notifyFail(a, 'Le foyer est complet (8 membres).'); return; }
-    a.flags.babyDue = Math.floor(w.time / 1440) + 1;
-    a.flags.babyWith = b.id;
-    w.log('family', `👶 ${simName(a)} et ${simName(b)} attendent un heureux événement pour demain !`, [a.id, b.id], { icon: '👶', important: true });
+    // C'est la Sim (ou, à défaut, l'initiateur) qui porte l'enfant.
+    const carrier = a.gender === 'f' ? a : b.gender === 'f' ? b : a;
+    const other = carrier === a ? b : a;
+    const day = Math.floor(w.time / 1440);
+    carrier.flags.babyDue = day + LifeSystem.PREGNANCY_DAYS;
+    carrier.flags.babyWith = other.id;
+    carrier.flags.pregnantSince = day;
+    carrier.flags.belly = 1;
+    this.S.addMoodlet(carrier, 'preg_early');
+    this.S.addMoodlet(other, 'future_parent');
+    w.log('family', `🤰 ${simName(carrier)} est enceinte ! ${simName(other)} et elle attendent un bébé dans ${LifeSystem.PREGNANCY_DAYS} jours.`, [a.id, b.id], { icon: '🤰', important: true });
+    this.S.emit('notify', { text: `${carrier.first} est enceinte !`, icon: '🤰', sim: carrier.id });
+    this.S.emit('appearance', carrier);
+  }
+  // Trimestre (1 à 3) d'une Sim enceinte, 0 sinon.
+  trimester(s) {
+    if (!s.flags.babyDue) return 0;
+    const day = Math.floor(this.w.time / 1440);
+    const start = s.flags.pregnantSince ?? s.flags.babyDue - LifeSystem.PREGNANCY_DAYS;
+    return Math.max(1, Math.min(3, day - start + 1));
+  }
+  pregnancyDay(s) {
+    const t = this.trimester(s);
+    s.flags.belly = t;
+    if (t === 1) this.S.addMoodlet(s, 'preg_early');
+    if (t === 2) this.S.addMoodlet(s, 'preg_glow');
+    if (t === 3) { this.S.addMoodlet(s, 'preg_late'); this.S.emit('notify', { text: `${s.first} : le bébé arrive bientôt !`, icon: '🤰', sim: s.id }); }
+    this.S.emit('appearance', s);
   }
 
   birth(a) {
     const w = this.w, S = this.S;
     const b = w.sim(a.flags.babyWith) || a;
-    a.flags.babyDue = null; a.flags.babyWith = null;
+    a.flags.babyDue = null; a.flags.babyWith = null; a.flags.pregnantSince = null; a.flags.belly = 0;
+    S.emit('appearance', a);
     const baby = childOf(w.rng, a, b);
     baby.householdId = a.householdId;
     const h = w.household(a.householdId);

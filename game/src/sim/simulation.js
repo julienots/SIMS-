@@ -215,6 +215,8 @@ export class Simulation extends Emitter {
     for (const n of registry.needs) {
       if (s._rt.hidden && s.flags.atVenue && (n.id === 'fun' || n.id === 'social')) continue;
       let d = n.decay * (mult[n.id] || 1) * realism * (powerMods[n.id] || 1) * this.wants.needMult(s, n.id);
+      // Grossesse : fatigue et faim plus rapides.
+      if (s.flags.babyDue && (n.id === 'energy' || n.id === 'sleep' || n.id === 'hunger')) d *= 1.25;
       if (s._rt.sleeping && n.id === 'sleep') continue;
       if (s.stage === 'child') d *= 0.9;
       s.needs[n.id] = clamp(s.needs[n.id] - d * dtMin, 0, 100);
