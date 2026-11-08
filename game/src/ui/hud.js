@@ -1,9 +1,10 @@
 // Interface en jeu (mode Vie) : foyer, fiche du sim, besoins, file d'actions, temps, menus contextuels,
 // dialogues des habitants, contrôle direct tactile.
-import { h, btn, toast, setFocus, focusFirst, usingPadRef } from './dom.js';
+import { h, btn, toast, setFocus, focusFirst, usingPadRef, openModal } from './dom.js';
 import { registry } from '../mods/registry.js';
 import { formatClock, formatMoney, DAYS, escapeHtml, clamp } from '../core/util.js';
 import { REWARDS, reward } from '../sim/wants.js';
+import { PET_KINDS } from '../sim/pets.js';
 import { REL_STATUS } from '../sim/data/social.js';
 import { CAM_MODES } from '../render/camera.js';
 import { ALIGNMENTS, PASSIVE_EFFECTS } from '../sim/powers.js';
@@ -59,6 +60,7 @@ export class Hud {
       ['🗺️', 'Monde et quartiers (F4)', () => g.ui.panels.worldPanel()],
       ['📜', 'Journal du monde (J)', () => g.ui.panels.journal()],
       ['✨', 'Mode créatif total', () => g.ui.panels.creative()],
+      ['🐶', 'Adopter un chien', () => this.adoptDialog()],
       ['🧩', 'Mods', () => g.ui.mods.manager()],
       ['⚙️', 'Options et sauvegarde (Échap)', () => g.ui.panels.pauseMenu()],
     ];
@@ -68,6 +70,27 @@ export class Hud {
     document.getElementById('ui').appendChild(menu);
     const off = e => { if (!menu.contains(e.target) && e.target !== anchor) { menu.remove(); document.removeEventListener('pointerdown', off, true); } };
     setTimeout(() => document.addEventListener('pointerdown', off, true), 0);
+  }
+
+  // Adoption d'un chien par le foyer actif.
+  adoptDialog() {
+    const g = this.game, S = this.S;
+    const hh = this.W.household(g.household);
+    if (!hh) { toast('Aucun foyer actif', '⚠️'); return; }
+    let kind = PET_KINDS[0].kind, name = '';
+    openModal({
+      title: 'Adopter un chien', icon: '🐶',
+      body: render => [
+        h('p', { class: 'muted' }, `Foyer ${hh.name} — fonds : ${formatMoney(hh.funds)}. Le chien vivra sur votre terrain : nourrissez-le, caressez-le, jouez avec lui.`),
+        h('div', { class: 'grid small' }, ...PET_KINDS.map(k => h('button', { class: `card ${kind === k.kind ? 'selected' : ''}`, onclick: () => { kind = k.kind; render(); } }, h('div', { class: 'big' }, '🐶'), h('div', { class: 'title' }, k.name), h('div', { class: 'muted' }, `✦${k.price}`)))),
+        h('h3', {}, 'Nom'), h('input', { value: name, placeholder: 'Nom au hasard si vide', maxlength: 20, oninput: e => { name = e.target.value; } }),
+      ],
+      foot: (render, close) => [btn('Annuler', close, 'ghost'), btn('🐶 Adopter', () => {
+        const r = S.pets.adopt(hh.id, kind, name.trim());
+        if (r.error) { toast(r.error, '⚠️'); return; }
+        close(); this.refresh();
+      }, 'primary')],
+    });
   }
 
   // Interface minimale : seuls l'heure, la vitesse et les modes restent affichés.
@@ -338,6 +361,11 @@ export class Hud {
         items.push({ label: 'Voir le profil', icon: '🪪', cat: 'info', special: () => g.ui.panels.simProfile(t) });
         if (me && t.stage === 'baby') items = [{ label: 'Voir le profil', icon: '🪪', cat: 'info', special: () => g.ui.panels.simProfile(t) }];
       }
+    } else if (target.type === 'pet') {
+      const c = target.pet, n = c.needs;
+      title = `${c.name} (${PET_KINDS.find(k => k.kind === c.kind)?.name || 'chien'})`;
+      if (me) items = S.pets.menu(me, c);
+      items.push({ label: `Faim ${Math.round(n.hunger)} · Jeu ${Math.round(n.fun)} · Affection ${Math.round(n.affection)}`, icon: '🐾', cat: 'info', disabled: 'État de l’animal' });
     } else if (target.type === 'object') {
       const def = registry.object(target.obj.def);
       title = def?.name || `Objet d’un mod désactivé (${target.obj.def})`;
@@ -354,7 +382,7 @@ export class Hud {
       }
       if (lot && lot.forSale) items.push({ label: `Acheter ce terrain (✦${lot.price})`, icon: '🏷️', cat: 'world', special: () => g.ui.panels.buyLot(lot) });
     }
-    if (!me && target.type !== 'sim') items = items.filter(i => i.special);
+    if (!me && target.type !== 'sim') items = items.filter(i => i.special || i.disabled);
     const pie = h('div', { class: 'panel pie', dataset: { scope: '1' } }, h('div', { class: 'pie-title' }, title));
     let lastCat = null;
     const catNames = { friendly: 'Amical', funny: 'Drôle', romantic: 'Romantique', mean: 'Méchant', deep: 'Profond', power: 'Pouvoirs', info: 'Infos', move: 'Déplacement', self: 'Soi-même', world: 'Monde' };
@@ -454,6 +482,7 @@ export class Hud {
     let txt = '';
     if (hit?.type === 'sim') txt = `👤 ${simName(hit.sim)}`;
     else if (hit?.type === 'object') txt = `${registry.object(hit.obj.def)?.name || 'Objet'}`;
+    else if (hit?.type === 'pet') txt = `🐶 ${hit.pet.name}`;
     if (!txt) { this.hoverLabel.classList.add('hidden'); return; }
     this.hoverLabel.textContent = txt;
     this.hoverLabel.style.left = `${x}px`; this.hoverLabel.style.top = `${y}px`;

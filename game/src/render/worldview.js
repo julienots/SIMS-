@@ -8,6 +8,7 @@ import { LEVEL_HEIGHT, LEVELS } from '../sim/world.js';
 import { objectModel, loadGLB } from './assets.js';
 import { terrainMaterial, GrassField, updateNature, skyTexture } from './nature.js';
 import { Traffic } from './traffic.js';
+import { bubbleTexture } from './simview.js';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 const WALL_H = LEVEL_HEIGHT, WALL_T = 0.14, LOW_H = 0.3;
@@ -598,13 +599,21 @@ export class WorldView {
   async syncCritters(dt) {
     this.traffic?.update(dt);
     const list = this.world.d.critters || [];
+    if (this.critterViews.size > list.length) for (const [id, v] of this.critterViews) if (!list.some(c => c.id === id)) { this.root.remove(v.group); this.critterViews.delete(id); }
     for (const c of list) {
       let v = this.critterViews.get(c.id);
       const def = ANIMALS[c.kind] || ANIMALS.fox;
       if (!v) {
         v = { group: new THREE.Group(), mixer: null, actions: {}, rig: null, t: Math.random() * 100 };
+        v.group.userData.critterId = c.id;
         this.critterViews.set(c.id, v);
         this.root.add(v.group);
+        if (c.pet) {
+          // Bulle de besoin au-dessus de l'animal de compagnie.
+          v.bubble = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false }));
+          v.bubble.scale.set(0.55, 0.55, 1); v.bubble.position.y = 1.15; v.bubble.renderOrder = 10; v.bubble.visible = false;
+          v.group.add(v.bubble);
+        }
         Promise.all([loadGLB(def.model), c.kind === 'skeleton' ? loadGLB('characters/Skeleton_Warrior') : null]).then(([g, anim]) => {
           const m = skeletonClone(g.scene);
           m.scale.setScalar(c.kind === 'skeleton' ? 0.55 : c.kind === 'fox' ? 0.012 : 1);
@@ -624,6 +633,11 @@ export class WorldView {
       }
       v.group.position.set(c.x, 0, c.y);
       v.group.rotation.y = c.rot;
+      if (v.bubble) {
+        v.bubble.visible = !!c.bubble;
+        if (c.bubble && v.bubbleIcon !== c.bubble) { v.bubble.material.map = bubbleTexture(c.bubble); v.bubble.material.needsUpdate = true; v.bubbleIcon = c.bubble; }
+        if (c.bubble) v.bubble.position.y = 1.1 + Math.sin(performance.now() / 300) * 0.04;
+      }
       if (v.mixer) {
         const want = c.state === 'flee' ? 'run' : c.state === 'walk' ? 'walk' : 'idle';
         if (want !== v.cur && v.actions[want]) { v.actions[v.cur]?.fadeOut(0.3); v.actions[want].reset().fadeIn(0.3).play(); v.cur = want; }

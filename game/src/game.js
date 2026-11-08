@@ -234,7 +234,15 @@ export class Game {
       while (o && !o.userData.objId) o = o.parent;
       if (o?.userData.objId && o.visible) { obj = this.world.obj(o.userData.objId); objT = h.distance; break; }
     }
+    // Animaux de compagnie.
+    let pet = null, petT = Infinity;
+    for (const c of this.world.d.critters || []) {
+      if (!c.pet) continue;
+      tmp.set(c.x, 0.35, c.y);
+      if (ray.distanceSqToPoint(tmp) < 0.3) { const t = ray.origin.distanceTo(tmp); if (t < petT) { petT = t; pet = c; } }
+    }
     const tile = this.groundTile(x, y);
+    if (pet && petT < bestT && petT <= objT + 2.5) return { type: 'pet', pet, tile };
     if (bestSim && bestT <= objT + 0.5) return { type: 'sim', sim: bestSim, tile };
     if (obj) return { type: 'object', obj, tile };
     return tile ? { type: 'ground', tile } : null;
@@ -265,6 +273,8 @@ export class Game {
       const t = hit.sim;
       if (this.householdSims().some(s => s.id === t.id) && t.id !== this.selected && !this.controlledSim) { this.selectSim(t.id); return; }
       this.ui.hud?.openPie(x, y, { type: 'sim', sim: t });
+    } else if (hit.type === 'pet') {
+      this.ui.hud?.openPie(x, y, { type: 'pet', pet: hit.pet });
     } else if (hit.type === 'object') {
       this.ui.hud?.openPie(x, y, { type: 'object', obj: hit.obj, tile: hit.tile });
     } else if (hit.type === 'ground' && me) {

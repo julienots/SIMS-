@@ -106,6 +106,8 @@ export const MOODLETS = {
   preg_glow: { name: 'Future maman radieuse', emotion: 'happy', weight: 2, dur: 1440 },
   preg_late: { name: 'Fin de grossesse', emotion: 'tense', weight: 1, dur: 1440 },
   future_parent: { name: 'Futur parent', emotion: 'happy', weight: 2, dur: 1440 },
+  pet_cuddle: { name: 'Câlin avec le chien', emotion: 'happy', weight: 1, dur: 180 },
+  pet_play: { name: 'Partie de balle', emotion: 'playful', weight: 2, dur: 180 },
   want_fulfilled: { name: 'Envie réalisée', emotion: 'happy', weight: 1, dur: 120 },
   potion_happy: { name: 'Potion de bonne humeur', emotion: 'happy', weight: 4, dur: 1440 },
   grieving: { name: 'Chagrin', emotion: 'sad', weight: 3, dur: 1440 },

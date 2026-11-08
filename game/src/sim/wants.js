@@ -38,6 +38,8 @@ export const WANT_POOL = [
   { id: 'kiss', kind: 'social', target: 'kiss', label: 'Embrasser quelqu’un', icon: '💋', pts: 150, tags: ['romantic', 'love', 'flirty'] },
   { id: 'prank', kind: 'social', target: 'prank', label: 'Faire une farce', icon: '🤡', pts: 100, tags: ['rebel', 'funny', 'playful'] },
   { id: 'argue', kind: 'social', target: 'mean', label: 'Se disputer avec quelqu’un', icon: '😠', pts: 80, tags: ['angry', 'selfish', 'jealous'] },
+  { id: 'pet_cuddle', kind: 'pet', target: 'pet_pet', label: 'Câliner le chien', icon: '🐶', pts: 80, tags: ['kind', 'family', 'sad', 'loner'] },
+  { id: 'pet_play', kind: 'pet', target: 'pet_play', label: 'Jouer à la balle avec le chien', icon: '🎾', pts: 100, tags: ['playful', 'energized', 'family'] },
   { id: 'meet', kind: 'meet', label: 'Rencontrer quelqu’un de nouveau', icon: '🤝', pts: 120, tags: ['outgoing', 'popular', 'curious'] },
   { id: 'skill_any', kind: 'skill', target: null, label: 'Progresser dans une compétence', icon: '⭐', pts: 150, tags: ['master', 'ambitious', 'smart', 'focused'] },
   { id: 'skill_cook', kind: 'skill', target: 'cooking', label: 'Progresser en cuisine', icon: '🍳', pts: 160, tags: ['family'] },
@@ -92,6 +94,7 @@ export class WantsSystem {
     if (s.stage === 'baby') return false;
     if (p.kind === 'aff') return this.w.objects.some(o => registry.object(o.def)?.aff?.includes(p.target));
     if (p.kind === 'social' && ['romantic', 'kiss'].includes(p.target)) return ['young', 'adult', 'elder'].includes(s.stage);
+    if (p.kind === 'pet') return this.S.pets?.ofHousehold(s.householdId).length > 0;
     if (p.kind === 'earn') return ['young', 'adult', 'elder'].includes(s.stage);
     return true;
   }
@@ -118,6 +121,7 @@ export class WantsSystem {
       else if (kind === 'skill') ok = !want.target || want.target === value;
       else if (kind === 'emotion') ok = want.target === value;
       else if (kind === 'meet') ok = true;
+      else if (kind === 'pet') ok = !want.target || want.target === value;
       if (ok) this.complete(s, want);
     }
   }

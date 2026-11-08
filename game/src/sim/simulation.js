@@ -11,6 +11,7 @@ import { EventSystem } from './events.js';
 import { PowerSystem } from './powers.js';
 import { ANIMALS } from './data/animals.js';
 import { WantsSystem } from './wants.js';
+import { PetSystem } from './pets.js';
 
 export const SPEEDS = [0, 1, 3, 8];
 const WALK = 1.7, RUN = 3.6;      // cases / seconde de simulation
@@ -37,6 +38,7 @@ export class Simulation extends Emitter {
     this.events = new EventSystem(this);
     this.powers = new PowerSystem(this);
     this.wants = new WantsSystem(this);
+    this.pets = new PetSystem(this);
     this.lastHour = Math.floor(world.time / 60);
     this.lastDay = dayOf(world.time);
     this.pendingDialogs = [];
@@ -114,12 +116,14 @@ export class Simulation extends Emitter {
     if (frozen) { this.frozenTimer = (this.frozenTimer || 0) - dt; if (this.frozenTimer <= 0) { this.frozenUntil = 0; this.emit('timeResumed'); } }
     this.powers.step(dt, dtMin);
     this.stepCritters(dt);
+    this.pets.step(dt, frozen ? 0 : dtMin);
   }
 
   // Animaux et créatures d'ambiance : errance simple, fuite devant les humains.
   stepCritters(dt) {
     const w = this.world;
     for (const c of w.d.critters || []) {
+      if (c.pet) continue;   // animaux de compagnie : voir pets.js
       const tx = c.tx + 0.5, ty = c.ty + 0.5;
       const d = Math.hypot(tx - c.x, ty - c.y);
       let near = null;
@@ -393,6 +397,7 @@ export class Simulation extends Emitter {
       react: this.runReact,
       power: this.powers.runPower.bind(this.powers),
       party: this.social.runParty.bind(this.social),
+      pet: this.pets.run.bind(this.pets),
     };
   }
 
@@ -1041,6 +1046,8 @@ export class Simulation extends Emitter {
     // Interactions sociales.
     const soc = this.social.autonomousOptions(s, traits, emo);
     opts.push(...soc);
+    // Animaux de compagnie du foyer.
+    opts.push(...this.pets.autonomousOptions(s));
     // Flâner / réfléchir : options de secours qui évitent l'immobilité.
     opts.push({ score: 0.35, action: { kind: 'wander', name: 'Se promener', icon: '🚶' } });
     opts.push({ score: 0.15, action: { kind: 'idle', dur: 8, anim: 'idle', name: 'Réfléchir', icon: '💭' } });

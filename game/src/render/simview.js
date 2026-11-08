@@ -21,7 +21,7 @@ const CAPES = /cape/i;
 // Bulle de pensée : icône vectorielle (Lucide) correspondant à l'emoji du jeu, dessinée sur une bulle blanche.
 const bubbleCache = new Map();
 const EMO_NORM = new Map(Object.entries(EMOJI_ICONS).map(([k, v]) => [k.replace(/\uFE0F/g, ''), v]));
-function bubbleTexture(icon) {
+export function bubbleTexture(icon) {
   if (bubbleCache.has(icon)) return bubbleCache.get(icon);
   const c = document.createElement('canvas');
   c.width = c.height = 128;
