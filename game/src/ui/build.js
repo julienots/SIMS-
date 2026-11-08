@@ -258,7 +258,7 @@ export class BuildMode {
     } else if (this.mode === 'build' && !this.drag) {
       // Marqueur de case.
       if (!this.cellMarker) {
-        this.cellMarker = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: '#ffcf2e', transparent: true, opacity: 0.35, depthWrite: false }));
+        this.cellMarker = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: '#2f8fe8', transparent: true, opacity: 0.35, depthWrite: false }));
         this.cellMarker.rotation.x = -Math.PI / 2;
         this.ghost.add(this.cellMarker);
       }

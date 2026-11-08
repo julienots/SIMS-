@@ -27,15 +27,15 @@ export class CAS {
     this.game = game; this.app = app;
     this.active = false;
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color('#1c2140');
+    this.scene.background = new THREE.Color('#d6e1ee');
     this.camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.1, 100);
     game.casCamera = this.camera;
     this.scene.add(new THREE.HemisphereLight('#ffffff', '#444466', 1.2));
     const key = new THREE.DirectionalLight('#fff2dd', 2.4); key.position.set(3, 5, 4); key.castShadow = true; this.scene.add(key);
     const rim = new THREE.DirectionalLight('#9bb8ff', 1.5); rim.position.set(-4, 3, -3); this.scene.add(rim);
-    const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.0, 0.18, 40), new THREE.MeshStandardMaterial({ color: '#ffcf2e', roughness: 0.4 }));
+    const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.0, 0.18, 40), new THREE.MeshStandardMaterial({ color: '#f4f7fb', roughness: 0.35 }));
     ped.position.y = -0.09; ped.receiveShadow = true; this.scene.add(ped);
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(12, 48), new THREE.MeshStandardMaterial({ color: '#262c52' }));
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(12, 48), new THREE.MeshStandardMaterial({ color: '#c9d6e6' }));
     floor.rotation.x = -Math.PI / 2; floor.position.y = -0.18; this.scene.add(floor);
     this.holder = new THREE.Group();
     this.scene.add(this.holder);

@@ -31,7 +31,7 @@ copy('game/assets', `${OUT}/assets`);
 copy('game/mods', `${OUT}/mods`);
 if (fs.existsSync('game/icon.png')) copy('game/icon.png', `${OUT}/icon.png`);
 fs.mkdirSync(`${OUT}/fonts`, { recursive: true });
-for (const [pkg, files] of [['fredoka', ['fredoka-latin-600-normal.woff2', 'fredoka-latin-700-normal.woff2']], ['nunito', ['nunito-latin-400-normal.woff2', 'nunito-latin-700-normal.woff2', 'nunito-latin-800-normal.woff2']]]) {
+for (const [pkg, files] of [['inter', [400, 600, 700, 800].map(w => `inter-latin-${w}-normal.woff2`)]]) {
   for (const f of files) copy(`node_modules/@fontsource/${pkg}/files/${f}`, `${OUT}/fonts/${f}`);
 }
 let size = 0;

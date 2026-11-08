@@ -137,7 +137,7 @@ export class Hud {
         h('div', { class: 'portrait selected', style: { background: portraitBg(s), width: '56px', height: '56px' } }, s.first[0]),
         h('div', { class: 'col', style: { gap: '4px', minWidth: '150px' } },
           h('div', { class: 'name' }, simName(s)),
-          h('div', { class: 'row', style: { gap: '6px' } }, h('span', { class: 'tag', style: { color: emo.color } }, `${emo.icon} ${emo.name}`), s.flags.atVenue ? h('span', { class: 'tag' }, '🏢 Absent') : null, s.flags.babyDue ? h('span', { class: 'tag', title: 'Grossesse' }, `🤰 Enceinte · jour ${this.S.life.trimester(s)}/3`) : null),
+          h('div', { class: 'row', style: { gap: '6px' } }, h('span', { class: 'tag', style: { borderLeft: `3px solid ${emo.color}` } }, `${emo.icon} ${emo.name}`), s.flags.atVenue ? h('span', { class: 'tag' }, '🏢 Absent') : null, s.flags.babyDue ? h('span', { class: 'tag', title: 'Grossesse' }, `🤰 Enceinte · jour ${this.S.life.trimester(s)}/3`) : null),
           h('div', { class: 'bar', style: { width: '150px' } }, h('i', { style: { width: `${mood}%`, background: moodColor(mood) } }))),
         // Envies (à la Sims 4) : trois bulles à côté du portrait.
         h('div', { class: 'wants-row', title: 'Envies' }, ...(s.wants || []).map(x => h('button', { class: `want-bubble ${x.locked ? 'locked' : ''}`, title: `${x.label} (+${x.pts})`, onclick: () => { this.tab = 'wants'; this.refresh(); } }, x.icon))),
@@ -314,7 +314,7 @@ export class Hud {
           break;
         }
         const al = ALIGNMENTS[d.alignment] || ALIGNMENTS.civilian;
-        this.energyBar = h('i', { style: { width: `${d.energy}%`, background: '#ffcf2e' } });
+        this.energyBar = h('i', { style: { width: `${d.energy}%`, background: '#1b7fd6' } });
         p.append(h('div', { class: 'row' }, h('span', { class: 'tag yellow' }, `${al.icon} ${al.name}`), h('span', { class: 'tag' }, d.identity === 'secret' ? '🎭 Identité secrète' : '📣 Identité publique'), h('span', { class: 'tag' }, `Réputation ${Math.round(d.reputation)}`)),
           h('div', { class: 'muted', style: { marginTop: '6px' } }, 'Énergie'), h('div', { class: 'bar' }, this.energyBar));
         for (const pw of S.powers.powersOf(s)) {
