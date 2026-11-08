@@ -5,6 +5,7 @@ import { registry } from '../mods/registry.js';
 import { formatClock, formatMoney, DAYS, escapeHtml, clamp } from '../core/util.js';
 import { REWARDS, reward } from '../sim/wants.js';
 import { PET_KINDS } from '../sim/pets.js';
+import { Lessons } from './lessons.js';
 import { REL_STATUS } from '../sim/data/social.js';
 import { CAM_MODES } from '../render/camera.js';
 import { ALIGNMENTS, PASSIVE_EFFECTS } from '../sim/powers.js';
@@ -25,8 +26,10 @@ export class Hud {
     this.root = h('div', { id: 'hud' });
     document.getElementById('ui').appendChild(this.root);
     this.build();
+    this.lessons ||= new Lessons(game);
+    setTimeout(() => this.lessons?.show(), 1500);
   }
-  unmount() { this.root?.remove(); this.root = null; this.closePie(); document.querySelector('.dialog-pop')?.remove(); }
+  unmount() { this.lessons?.dispose(); this.root?.remove(); this.root = null; this.closePie(); document.querySelector('.dialog-pop')?.remove(); }
 
   get S() { return this.game.sim; }
   get W() { return this.game.world; }
@@ -62,6 +65,7 @@ export class Hud {
       ['✨', 'Mode créatif total', () => g.ui.panels.creative()],
       ['🐶', 'Adopter un chien', () => this.adoptDialog()],
       ['🧩', 'Mods', () => g.ui.mods.manager()],
+      ['🎓', 'Revoir les leçons', () => this.lessons?.reset()],
       ['⚙️', 'Options et sauvegarde (Échap)', () => g.ui.panels.pauseMenu()],
     ];
     const menu = h('div', { class: 'panel main-dropdown', dataset: { scope: '1' } }, ...items.map(([ic, label, fn]) => btn(`${ic} ${label}`, () => { menu.remove(); fn(); }, 'ghost menu-item')));
@@ -103,6 +107,9 @@ export class Hud {
   // ------------------------------------------------------------------ rendu complet
   refresh() {
     if (!this.root || !this.W) return;
+    if (this.tab) this.lessons?.mark(`tab:${this.tab}`);
+    this.lessons?.mark(`mode:${this.game.mode}`);
+    if (this.S.speedIdx !== 1) this.lessons?.mark('speed');
     const g = this.game;
     const s = g.selectedSim();
     for (const [id, m] of [['m-live', 'live'], ['m-buy', 'buy'], ['m-build', 'build']]) this.root.querySelector('#' + id)?.classList.toggle('active', g.mode === m);
@@ -349,6 +356,7 @@ export class Hud {
   // ------------------------------------------------------------------ menus contextuels
   openPie(x, y, target) {
     this.closePie();
+    this.lessons?.mark('pie');
     const g = this.game, S = this.S;
     const me = g.controlledSim || g.selectedSim();
     let title = '', items = [];

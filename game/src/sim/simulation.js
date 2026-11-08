@@ -46,6 +46,8 @@ export class Simulation extends Emitter {
     this.frozenUntil = 0;             // arrêt du temps (mod)
     this.frozenExcept = null;
     for (const s of world.sims) this.initRuntime(s);
+    // Envies tirées dès le chargement (sinon les bulles n'apparaissent qu'à l'heure suivante).
+    for (const s of world.sims) if (s.stage !== 'baby') this.wants.refill(s);
   }
 
   get speed() { return SPEEDS[this.speedIdx]; }
