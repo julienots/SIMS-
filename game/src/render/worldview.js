@@ -559,6 +559,12 @@ export class WorldView {
     holder.add(model);
     holder.userData.model = model;
     holder.traverse(m => { if (m.isMesh) m.userData.objId = o.id; });
+    // Pièces animées repérées une fois (avant : recherche dans tout le modèle à chaque image).
+    holder.userData.disc = model.getObjectByName('portalDisc');
+    holder.userData.spin = model.getObjectByName('spin');
+    if (holder.userData.disc || holder.userData.spin) (this.animated ||= new Set()).add(holder);
+    // Distance au-delà de laquelle l'objet n'est plus dessiné (bâtiments et grands objets restent visibles).
+    holder.userData.cull = def?.building || def?.venue || (def && def.size[0] * def.size[1] >= 6) ? Infinity : def?.cat === 'jardin' || def?.cat === 'eclairage' ? 110 : 80;
     this.applyObjectState(o);
   }
 
@@ -575,6 +581,7 @@ export class WorldView {
   removeObjectView(id) {
     const v = this.objViews.get(id);
     if (!v) return;
+    this.animated?.delete(v);
     this.objRoot.remove(v);
     this.objViews.delete(id);
   }
@@ -755,16 +762,20 @@ export class WorldView {
   }
 
   // Animation des petits éléments (portails, écrans).
-  tick(now) {
+  tick(now, camTarget) {
+    for (const v of this.animated || []) {
+      if (v.userData.disc) v.userData.disc.rotation.z = now * 2;
+      if (v.userData.spin) v.userData.spin.rotation.y = now;
+    }
+    // Deux fois par seconde : objets lointains masqués, objets brûlés/gelés mis à jour.
+    if (now - (this.lastCull || 0) < 0.5) return;
+    this.lastCull = now;
     for (const [id, v] of this.objViews) {
-      const m = v.userData.model;
-      if (!m) continue;
-      const disc = m.getObjectByName('portalDisc');
-      if (disc) disc.rotation.z = now * 2;
-      const spin = m.getObjectByName('spin');
-      if (spin) spin.rotation.y = now;
       const o = this.world.obj(id);
       if (o?.state && (o.state.burnt || o.state.frozen)) this.applyObjectState(o);
+      if (!camTarget || !v.userData.model) continue;
+      const far = (v.position.x - camTarget.x) ** 2 + (v.position.z - camTarget.z) ** 2 > v.userData.cull ** 2;
+      v.userData.model.visible = !far;
     }
   }
 }

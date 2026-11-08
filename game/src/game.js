@@ -203,6 +203,22 @@ export class Game {
     return best;
   }
 
+  // Résolution adaptative (qualité « auto ») : si l'affichage rame, on baisse la résolution de rendu, et on la
+  // remonte quand il y a de la marge. Évite les saccades sur les téléphones modestes.
+  adaptResolution(dt) {
+    if ((this.settings.quality || 'auto') !== 'auto' || !dt) return;
+    this._fpsAcc = (this._fpsAcc || 0) + dt; this._fpsN = (this._fpsN || 0) + 1;
+    if (this._fpsAcc < 3) return;
+    const fps = this._fpsN / this._fpsAcc;
+    this._fpsAcc = 0; this._fpsN = 0;
+    const max = Math.min(window.devicePixelRatio || 1, this.quality.pixelRatio);
+    const cur = this.renderer.getPixelRatio();
+    let next = cur;
+    if (fps < 28) next = Math.max(0.6, cur * 0.85);
+    else if (fps > 55) next = Math.min(max, cur * 1.1);
+    if (Math.abs(next - cur) > 0.01) { this.renderer.setPixelRatio(next); this.renderer.setSize(innerWidth, innerHeight, false); }
+  }
+
   // ------------------------------------------------------------------ sélection / picking
   ndc(x, y) { return new THREE.Vector2((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1); }
 
@@ -550,7 +566,8 @@ export class Game {
     if (this.worldView.wallMode === 'cutaway') this.worldView.rebuildStructure(this.rig.yaw);
     this.worldView.syncCritters(dt);
     this.worldView.updateVfx(this.sim.powers.vfx, this.world.time, performance.now());
-    this.worldView.tick(now);
+    this.worldView.tick(now, this.rig.target);
+    this.adaptResolution(dt);
     const ctx = { now, camPos: this.rig.camera.position, selected: this.selected, viewLevel: this.viewLevel, mood: sel ? this.sim.mood(sel) : 50 };
     for (const v of this.simViews.values()) v.update(dt, ctx);
     if (this.ui.build?.active) this.ui.build.frame(dt);

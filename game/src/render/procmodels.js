@@ -2,6 +2,7 @@
 // Construits à partir de primitives Three.js, avec des matériaux PBR simples.
 import * as THREE from 'three';
 import { treeModel } from './nature.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const matCache = new Map();
 export function mat(color, opts = {}) {
@@ -207,7 +208,34 @@ export function buildProcModel(kind, def, loadGLB) {
     default:
       add(box(0.8, 0.8, 0.8, '#ff4fd8', 0, 0, 0, { opacity: 0.6 }));
   }
-  return g;
+  return mergeByMaterial(g);
+}
+
+// Fusion des pièces d'un modèle généré qui partagent un matériau : un appel de dessin par matériau au lieu d'un
+// par pièce (une clôture passe de 14 à 2). Les pièces nommées (écran, disque animé…) restent séparées.
+function mergeByMaterial(g) {
+  g.updateMatrixWorld(true);
+  const groups = new Map(), keep = [];
+  g.traverse(o => {
+    if (!o.isMesh) return;
+    if (o.name || Array.isArray(o.material)) { keep.push(o); return; }
+    const k = o.material.uuid;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(o);
+  });
+  if ([...groups.values()].every(list => list.length < 2)) return g;
+  const out = new THREE.Group();
+  for (const list of groups.values()) {
+    if (list.length === 1) { const m = list[0]; m.matrix.copy(m.matrixWorld); m.matrix.decompose(m.position, m.quaternion, m.scale); out.add(m); continue; }
+    let geo = null;
+    try { geo = mergeGeometries(list.map(m => { const gg = (m.geometry.index ? m.geometry : m.geometry).clone(); gg.applyMatrix4(m.matrixWorld); return gg; }), false); } catch { geo = null; }
+    if (!geo) { for (const m of list) { m.matrix.copy(m.matrixWorld); m.matrix.decompose(m.position, m.quaternion, m.scale); out.add(m); } continue; }
+    const mesh = new THREE.Mesh(geo, list[0].material);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    out.add(mesh);
+  }
+  for (const m of keep) { m.matrix.copy(m.matrixWorld); m.matrix.decompose(m.position, m.quaternion, m.scale); out.add(m); }
+  return out;
 }
 
 function chessCanvas() {
